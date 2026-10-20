@@ -8,7 +8,7 @@ const Setting = require('../models/Setting');
 const Reflection = require('../models/Reflection');
 const authMiddleware = require('../middleware/auth');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'snapduty_secret_key_jwt_2026_super_secure';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function createToken(user) {
   return jwt.sign(

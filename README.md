@@ -70,6 +70,21 @@ Cada registro en MongoDB está estrictamente vinculado al `userId` del estudiant
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb://127.0.0.1:27017/snapduty
-JWT_SECRET=snapduty_secret_key_jwt_2026_super_secure
+MONGODB_URI=<tu-cadena-de-conexion-de-MongoDB>
+JWT_SECRET=<una-clave-aleatoria-larga-y-privada>
 ```
+
+No publiques el archivo `.env` ni guardes secretos en el repositorio. En producción, configura `MONGODB_URI` y `JWT_SECRET` en los ajustes del proyecto de Vercel.
+
+## ☁️ Publicación en Vercel
+
+El repositorio está preparado para ejecutar Express como aplicación en Vercel. El proyecto de Vercel debe apuntar a la rama `main` de GitHub; cada push a esa rama inicia un nuevo despliegue.
+
+Antes de publicar:
+
+1. Configura una base de datos MongoDB Atlas y usa su cadena de conexión en `MONGODB_URI`.
+2. Genera un `JWT_SECRET` aleatorio y privado (por ejemplo, con `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`).
+3. Añade ambas variables en **Vercel → Project → Settings → Environment Variables** para **Production** (y **Preview** si también vas a probar previews).
+4. En Atlas, configura el acceso de red para que las funciones de Vercel puedan conectarse y limita el usuario de base de datos a los permisos que necesita la aplicación.
+
+No uses una URI local (`127.0.0.1` o `localhost`) en Vercel: la base de datos debe ser accesible desde internet.

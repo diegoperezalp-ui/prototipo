@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'snapduty_secret_key_jwt_2026_super_secure';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function authMiddleware(req, res, next) {
   try {
