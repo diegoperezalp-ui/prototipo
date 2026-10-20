@@ -555,6 +555,7 @@
     .user-dropdown-action:hover { background: var(--accent-wash); color: var(--accent); }
     .user-dropdown-action.danger:hover { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
 
+    @media (min-width: 761px) and (max-width: 1100px) {
       .app-shell { grid-template-columns: 205px minmax(0, 1fr); }
       .main-shell { padding-right: 24px; padding-left: 24px; }
       .planner-columns { grid-template-columns: minmax(0, 1fr) 235px; }
@@ -562,19 +563,22 @@
     }
     @media (max-width: 760px) {
       .app-shell { display: block; }
-      .sidebar { position: sticky; top: 0; width: 100%; height: auto; padding: 10px 15px; flex-direction: row; align-items: center; gap: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .sidebar { position: sticky; top: 0; width: 100%; height: auto; min-height: 58px; padding: 9px 12px; flex-direction: row; align-items: center; gap: 10px; border-right: 0; border-bottom: 1px solid var(--line); }
       .brand { flex: 0 0 auto; gap: 8px; padding: 0; }
       .brand-mark { width: 36px; height: 36px; flex-basis: 36px; border-radius: 12px; font-size: 15px; }
       .brand-name { font-size: 19px; }
       .brand-note, .nav-label, .weekly-focus, .sidebar-foot, .sidebar-spacer { display: none; }
-      .side-nav { min-width: 0; flex: 1; display: flex; justify-content: flex-end; gap: 3px; }
-      .nav-link { min-height: 36px; padding: 0 10px; gap: 6px; border-radius: 10px; font-size: 9px; }
+      .side-nav { min-width: 0; flex: 1; display: flex; justify-content: flex-start; gap: 3px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+      .side-nav::-webkit-scrollbar { display: none; }
+      .nav-link { flex: 0 0 auto; min-height: 40px; padding: 0 10px; gap: 6px; border-radius: 10px; font-size: 9px; white-space: nowrap; }
       .nav-link i { width: auto; font-size: 11px; }
       .nav-link.active { box-shadow: inset 0 -2px var(--accent); }
       .main-shell { padding: 17px 15px 38px; }
-      .topbar { margin-bottom: 20px; }
+      .topbar { min-width: 0; flex-wrap: wrap; margin-bottom: 20px; }
       .breadcrumb { font-size: 9px; }
-      .top-actions { gap: 6px; }
+      .top-actions { min-width: 0; max-width: 100%; gap: 6px; }
+      .user-profile-btn { min-width: 0; max-width: min(210px, 34vw); }
+      #userProfileName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .icon-button { width: 36px; height: 36px; }
       .primary-button { min-height: 38px; padding: 0 12px; font-size: 10px; }
       .planner-columns { grid-template-columns: 1fr; }
@@ -582,11 +586,14 @@
       .side-panel + .side-panel { margin-top: 0; }
     }
     @media (max-width: 520px) {
-      .topbar { align-items: flex-start; }
-      .breadcrumb { max-width: 120px; line-height: 1.5; }
+      .main-shell { padding: 14px 12px 30px; }
+      .topbar { align-items: center; }
+      .breadcrumb { display: none; }
+      .top-actions { width: 100%; justify-content: space-between; }
       .top-actions .export-button { display: none; }
       .db-status-badge span#dbStatusText { display: none; }
       .db-status-badge { padding: 0 10px; min-height: 38px; }
+      .user-profile-btn { max-width: min(150px, 35vw); }
       .week-toolbar { align-items: flex-start; flex-direction: column; }
       .week-controls { align-self: stretch; justify-content: space-between; }
       .week-controls .week-range { flex: 1; }
@@ -595,12 +602,12 @@
       .hero-summary-value { display: inline-block; margin-right: 8px; }
       .hero-summary-note { display: inline; }
       .metrics { gap: 7px; }
-      .metric-card { min-height: 80px; padding: 12px 10px; align-items: flex-start; flex-direction: column-reverse; gap: 5px; }
+      .metric-card { min-width: 0; min-height: 80px; padding: 12px 10px; align-items: flex-start; flex-direction: column-reverse; gap: 5px; }
       .metric-icon { width: 28px; height: 28px; flex-basis: 28px; border-radius: 9px; font-size: 11px; }
       .metric-label { font-size: 7px; }
       .metric-value { font-size: 17px; }
-      .week-strip { min-width: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; overflow-x: auto; padding-bottom: 5px; }
-      .day-card { min-height: 84px; padding: 9px 7px; border-radius: 12px; }
+      .week-strip { min-width: 0; grid-template-columns: repeat(7, minmax(52px, 1fr)); gap: 4px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+      .day-card { min-height: 84px; padding: 9px 7px; border-radius: 12px; scroll-snap-align: start; }
       .day-name { font-size: 7px; }
       .day-number { font-size: 18px; }
       .day-count { max-width: 100%; overflow-wrap: anywhere; font-size: 7px; }
@@ -631,7 +638,33 @@
       .filter-select { flex: 1; }
       .form-grid { grid-template-columns: 1fr; }
       .form-field.wide { grid-column: auto; }
-      .modal { padding: 17px; }
+      .modal-backdrop { align-items: start; padding: 12px; }
+      .modal { width: 100%; max-height: calc(100dvh - 24px); padding: 16px; border-radius: 18px; }
+      .auth-backdrop { align-items: flex-start; overflow-y: auto; padding: 12px; }
+      .auth-card { max-width: 440px; margin: auto; padding: 26px 20px 22px; border-radius: 22px; }
+      .toast-container { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); left: 12px; }
+      .toast { max-width: none; }
+    }
+    @media (max-width: 380px) {
+      .sidebar { gap: 7px; padding-right: 8px; padding-left: 9px; }
+      .brand { gap: 6px; }
+      .brand-mark { width: 32px; height: 32px; flex-basis: 32px; }
+      .brand-name { font-size: 17px; }
+      .nav-link { min-height: 38px; padding: 0 8px; }
+      .main-shell { padding-right: 10px; padding-left: 10px; }
+      #newActivityButton { width: 38px; padding: 0; }
+      #newActivityButton span, #userProfileName { display: none; }
+      .week-controls { gap: 5px; }
+      .week-controls .week-range { min-width: 0; font-size: 9px; }
+      .week-controls #thisWeek { padding: 0 9px; }
+      .calendar-number { font-size: 9px; }
+      .activity-item { grid-template-columns: 32px minmax(0, 1fr) auto; gap: 6px; }
+      .modal-actions { align-items: stretch; flex-direction: column-reverse; }
+      .modal-actions-right { justify-content: flex-end; }
+    }
+    @media (max-height: 560px) and (max-width: 520px) {
+      .auth-backdrop { align-items: flex-start; }
+      .auth-card { margin: 0 auto; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -672,7 +705,7 @@
           </div>
           <button class="icon-button" id="themeToggle" type="button" aria-label="Activar tema oscuro" title="Cambiar tema"><i class="fa-regular fa-moon"></i></button>
           <button class="secondary-button export-button" id="exportButton" type="button"><i class="fa-solid fa-arrow-up-from-bracket"></i> Exportar</button>
-          <button class="primary-button" id="newActivityButton" type="button"><i class="fa-solid fa-plus"></i><span>Nueva actividad</span></button>
+          <button class="primary-button" id="newActivityButton" type="button" aria-label="Nueva actividad"><i class="fa-solid fa-plus"></i><span>Nueva actividad</span></button>
           
           <div class="user-profile-wrap" id="userProfileWrap">
             <button class="user-profile-btn" id="userProfileBtn" type="button" aria-label="Menú de usuario" aria-expanded="false">
