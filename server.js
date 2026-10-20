@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api', apiRoutes);
 
 // Static files (serves prototype and assets)
@@ -36,6 +38,7 @@ mongoose.connect(MONGODB_URI)
     app.listen(PORT, () => {
       console.log(`🚀 Servidor SnapDuty corriendo en http://localhost:${PORT}`);
       console.log(`📄 Aplicación disponible en http://localhost:${PORT}/`);
+      console.log(`🔐 Autenticación disponible en http://localhost:${PORT}/api/auth`);
       console.log(`🔌 API REST disponible en http://localhost:${PORT}/api/status`);
       console.log('----------------------------------------------------');
     });

@@ -1,22 +1,36 @@
-# SnapDuty · Planificador de Servicio Social con Base de Datos MongoDB
+# SnapDuty · Planificador de Servicio Social con Base de Datos MongoDB y Autenticación
 
 SnapDuty es una plataforma integral para planear y registrar actividades de servicio social con propósito. Su lema es: **Cada hora de servicio, un cambio que cuenta.**
 
-La aplicación cuenta con una **base de datos funcional en MongoDB** diseñada específicamente para dar soporte a cada una de sus funciones clave.
+Cuenta con un sistema de **autenticación y sesiones independientes en MongoDB** con cifrado `bcrypt` y tokens `JWT`, garantizando que cada estudiante tenga su propia agenda, cronómetro, reflexiones y estadísticas completamente aisladas y seguras.
 
 ---
 
-## 🏗️ Arquitectura de la Base de Datos
+## 🔐 Autenticación y Cuentas de Prueba
 
-Cada módulo de SnapDuty tiene su modelo y colección correspondiente en MongoDB:
+La aplicación incluye una interfaz visual moderna con glassmorphism para **Iniciar Sesión** y **Crear Cuenta**.
 
-| Función de la Aplicación | Colección / Modelo | Descripción y Propósito |
+### Credenciales de prueba listas para usar:
+| Usuario | Correo Electrónico | Contraseña | Perfil y Enfoque |
+| :--- | :--- | :--- | :--- |
+| **Carlos Mendoza** | `carlos.demo@snapduty.com` | `Password123!` | Universidad Nacional Autónoma · Asistencia Comunitaria y Talleres |
+| **Sofía García** | `sofia.garcia@snapduty.com` | `Password123!` | Instituto Politécnico · Alfabetización Digital y Biblioteca |
+
+*(También puedes hacer clic directamente en los botones de acceso rápido **Carlos M.** o **Sofía G.** dentro de la pantalla de inicio de sesión).*
+
+---
+
+## 🏗️ Arquitectura de la Base de Datos Multi-Usuario
+
+Cada registro en MongoDB está estrictamente vinculado al `userId` del estudiante autenticado:
+
+| Función de la Aplicación | Colección / Modelo | Aislamiento por Sesión en MongoDB |
 | :--- | :--- | :--- |
-| **Agenda y Calendario** | [`Activity`](file:///models/Activity.js) | CRUD completo de actividades: título, fecha, área/categoría, hora inicio/fin, prioridad, notas y estado (pendiente/completada). |
-| **Cronómetro y Medidor Diario** | [`ServiceTimer`](file:///models/ServiceTimer.js) | Registro de jornada diaria (4h/día), cálculo de salida estimada, estado de notificación y registro de horas trabajadas. |
-| **Metas de Servicio Social** | [`Goal`](file:///models/Goal.js) | Meta diaria (4h), meta semanal (20h) y meta reglamentaria total para liberación de servicio (480h). |
-| **Bitácora y Reflexiones** | [`Reflection`](file:///models/Reflection.js) | Diario de aprendizajes con fecha, área, impacto y horas asociadas. |
-| **Preferencias de Usuario** | [`Setting`](file:///models/Setting.js) | Tema visual (claro / oscuro) y configuración rápida persistente. |
+| **Usuarios y Perfil** | [`User`](file:///models/User.js) | Nombre, correo único, contraseña encriptada con bcrypt, institución, metas personales. |
+| **Agenda y Calendario** | [`Activity`](file:///models/Activity.js) | CRUD de actividades asociadas al usuario con índice compuesto `{ userId: 1, id: 1 }`. |
+| **Cronómetro y Medidor Diario** | [`ServiceTimer`](file:///models/ServiceTimer.js) | Jornada diaria (4h/día), salida estimada y horas acumuladas con índice `{ userId: 1, date: 1 }`. |
+| **Bitácora y Reflexiones** | [`Reflection`](file:///models/Reflection.js) | Diario de aprendizajes y horas registradas por el usuario. |
+| **Preferencias de Usuario** | [`Setting`](file:///models/Setting.js) | Tema visual (claro / oscuro) y reflexiones rápidas con índice `{ userId: 1, key: 1 }`. |
 
 ---
 
@@ -26,44 +40,36 @@ Cada módulo de SnapDuty tiene su modelo y colección correspondiente en MongoDB
 | :--- | :--- |
 | `npm start` | Inicia el servidor Express conectado a MongoDB en `http://localhost:3000`. |
 | `npm run dev` | Inicia el servidor en modo desarrollo con reinicio automático (`--watch`). |
-| `npm run seed` | Puebla la base de datos con datos representativos de servicio social (actividades, jornadas, metas y reflexiones). |
-| `npm test` o `npm run test:db` | Ejecuta la suite de pruebas automatizadas que valida cada operación CRUD y consulta de la base de datos. |
+| `npm run seed` | Puebla la base de datos con los usuarios demo y sus actividades independientes. |
+| `npm test` o `npm run test:db` | Ejecuta la suite de pruebas automatizadas que valida autenticación, encriptación y aislamiento de datos (9/9 pasadas). |
 
 ---
 
-## 🔌 Endpoints de la API REST (`/api`)
+## 🔌 Endpoints de la API REST
 
-### Estado y Arranque
-- `GET /api/status`: Verifica la conexión y devuelve el conteo de documentos en cada colección.
-- `GET /api/bootstrap`: Carga atómicamente todos los datos iniciales necesarios para el renderizado del cliente.
+### Autenticación (`/api/auth`)
+- `POST /api/auth/register`: Registro de nuevo estudiante (crea usuario y configura bienvenida).
+- `POST /api/auth/login`: Autentica credenciales con bcrypt y genera token JWT.
+- `GET /api/auth/me`: Devuelve los datos del usuario de la sesión actual.
+- `POST /api/auth/demo`: Acceso instantáneo a la cuenta de prueba.
+- `PUT /api/auth/profile`: Actualiza metas y datos institucionales del perfil.
 
-### Actividades (`/api/activities`)
-- `GET /api/activities`: Consulta actividades con filtros por `date`, rango (`startDate` a `endDate`), `category`, `status` (`done`/`pending`) y `search`.
-- `POST /api/activities`: Crea o actualiza una actividad (upsert con validaciones).
-- `GET /api/activities/:id`: Obtiene el detalle de una actividad.
-- `PUT /api/activities/:id`: Modifica los campos de una actividad.
-- `PATCH /api/activities/:id/toggle`: Alterna el estado entre completada y pendiente.
+### Datos del Usuario Autenticado (`/api`) *(Requieren `Authorization: Bearer <token>`)*
+- `GET /api/bootstrap`: Carga integral de las actividades, cronómetros y preferencias exclusivas del usuario.
+- `GET /api/activities`: Consulta actividades con filtros (`date`, `category`, `status`, `search`).
+- `POST /api/activities`: Crea o edita actividades del usuario.
+- `PATCH /api/activities/:id/toggle`: Alterna estado completada/pendiente.
 - `DELETE /api/activities/:id`: Elimina la actividad.
-- `POST /api/activities/bulk-sync`: Sincronización masiva desde almacenamiento local.
-
-### Cronómetro y Jornadas (`/api/timers`)
-- `GET /api/timers`: Devuelve el mapa de jornadas registradas por fecha.
-- `POST /api/timers`: Registra el inicio de una jornada con su timestamp.
-- `PATCH /api/timers/:date`: Actualiza estado (`notified`, `endAt`, `hoursWorked`, `notes`).
-- `DELETE /api/timers/:date`: Reinicia la jornada del día.
-- `POST /api/timers/bulk-sync`: Sincroniza jornadas masivamente.
-
-### Metas y Estadísticas
-- `GET /api/goals` & `PUT /api/goals`: Consulta y actualiza metas (4h día, 20h semana, 480h total).
-- `GET /api/stats`: Agregación en tiempo real de impacto (horas totales, desglose por área, días activos, porcentaje de avance).
-- `GET /api/reflections` & `POST /api/reflections`: Gestión de la bitácora de servicio social.
-- `GET /api/export` & `POST /api/import`: Respaldo y restauración completa de la base de datos en JSON.
+- `GET /api/timers` & `POST /api/timers`: Gestión de jornadas y horas del cronómetro diario.
+- `GET /api/stats`: Métricas de impacto del estudiante en tiempo real (horas totales, avance de meta 480h).
+- `GET /api/reflections` & `POST /api/reflections`: Bitácora personal del estudiante.
 
 ---
 
-## ⚙️ Configuración (`.env`)
+## ⚙️ Variables de Entorno (`.env`)
 
 ```env
 PORT=3000
 MONGODB_URI=mongodb://127.0.0.1:27017/snapduty
+JWT_SECRET=snapduty_secret_key_jwt_2026_super_secure
 ```

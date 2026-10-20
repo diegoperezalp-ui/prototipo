@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fff7fa">
+  <meta name="theme-color" content="#fff9fb">
   <meta name="description" content="SnapDuty: organiza tu servicio social semana a semana. Cada hora de servicio, un cambio que cuenta.">
   <title>SnapDuty · Servicio social con propósito</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,23 +13,23 @@
   <style>
     :root {
       color-scheme: light;
-      --page: #fff7fa;
+      --page: #fff9fb;
       --surface: #fff;
-      --surface-soft: #fff0f5;
-      --surface-strong: #fbe6ee;
-      --text: #54243a;
-      --text-soft: #846b78;
-      --line: #f0dce5;
-      --accent: #c94f7e;
-      --accent-strong: #a53866;
-      --accent-light: #f8d3e0;
-      --accent-wash: #fff0f5;
-      --hero: #642946;
-      --hero-2: #9d426d;
-      --shadow: 0 18px 50px rgba(88, 35, 60, .07);
-      --success: #4d8b70;
-      --warning: #b17a38;
-      --danger: #bd4967;
+      --surface-soft: #fcf0f4;
+      --surface-strong: #f5dfe8;
+      --text: #38212d;
+      --text-soft: #6b5660;
+      --line: #e8d6de;
+      --accent: #b53668;
+      --accent-strong: #92254f;
+      --accent-light: #edc4d3;
+      --accent-wash: #fceef3;
+      --hero: #542239;
+      --hero-2: #853c5d;
+      --shadow: 0 18px 50px rgba(64, 29, 44, .08);
+      --success: #327252;
+      --warning: #80551c;
+      --danger: #a63250;
       --radius: 22px;
     }
 
@@ -430,7 +430,131 @@
     .toast.info { border-left: 3px solid var(--accent); }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .hidden { display: none !important; }
-    @media (max-width: 1000px) {
+
+    /* ==================== LOGIN & AUTHENTICATION MODAL ==================== */
+    .auth-backdrop {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px;
+      background: radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 50%),
+                  radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--accent-strong) 25%, transparent), transparent 50%),
+                  rgba(10, 17, 30, 0.88);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auth-backdrop.active { opacity: 1; pointer-events: auto; }
+    .auth-card {
+      width: 100%; max-width: 440px; background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      border-radius: 28px; padding: 36px 32px 30px;
+      box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.55), 0 0 40px color-mix(in srgb, var(--accent) 20%, transparent);
+      transform: translateY(24px) scale(0.96);
+      transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+    }
+    .auth-backdrop.active .auth-card { transform: translateY(0) scale(1); }
+    .auth-header { text-align: center; margin-bottom: 22px; }
+    .auth-logo-badge {
+      width: 60px; height: 60px; margin: 0 auto 14px; border-radius: 20px;
+      display: grid; place-items: center; font-size: 25px; color: white;
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      box-shadow: 0 10px 25px color-mix(in srgb, var(--accent) 40%, transparent);
+      animation: authPulse 4s ease-in-out infinite;
+    }
+    @keyframes authPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 25px color-mix(in srgb, var(--accent) 35%, transparent); }
+      50% { transform: scale(1.05); box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 60%, transparent); }
+    }
+    .auth-title { margin: 0; font-family: "DM Serif Display", Georgia, serif; font-size: 26px; letter-spacing: -.02em; }
+    .auth-subtitle { color: var(--text-soft); font-size: 11px; margin-top: 5px; }
+    .auth-tabs {
+      display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-soft);
+      padding: 4px; border-radius: 14px; margin-bottom: 18px; gap: 4px; border: 1px solid var(--line);
+    }
+    .auth-tab-btn {
+      padding: 9px 12px; border: 0; border-radius: 10px; background: transparent;
+      color: var(--text-soft); font-weight: 700; font-size: 12px; cursor: pointer; transition: all .2s ease;
+    }
+    .auth-tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); }
+    .auth-form-group { display: grid; gap: 13px; }
+    .auth-field { display: flex; flex-direction: column; gap: 5px; }
+    .auth-field label { font-size: 10px; font-weight: 700; color: var(--text-soft); }
+    .auth-input-wrap { position: relative; display: flex; align-items: center; }
+    .auth-input-wrap i.field-icon { position: absolute; left: 14px; color: var(--text-soft); font-size: 13px; pointer-events: none; }
+    .auth-input {
+      width: 100%; height: 42px; padding: 0 14px 0 38px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--surface-soft); color: var(--text);
+      font-size: 12px; transition: border-color .2s, box-shadow .2s;
+    }
+    .auth-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+    .auth-toggle-pass {
+      position: absolute; right: 10px; background: transparent; border: 0;
+      color: var(--text-soft); cursor: pointer; padding: 6px; font-size: 13px;
+    }
+    .auth-toggle-pass:hover { color: var(--text); }
+    .auth-submit-btn {
+      height: 44px; border-radius: 12px; border: 0;
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: white; font-weight: 800; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 32%, transparent);
+      transition: transform .15s ease, box-shadow .2s ease; margin-top: 4px;
+    }
+    .auth-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 25px color-mix(in srgb, var(--accent) 45%, transparent); }
+    .auth-submit-btn:active { transform: translateY(1px); }
+    .auth-demo-section {
+      margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line); text-align: center;
+    }
+    .auth-demo-label { font-size: 10px; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 9px; }
+    .auth-demo-pills { display: flex; gap: 8px; justify-content: center; }
+    .auth-demo-pill {
+      flex: 1; padding: 8px 10px; background: var(--surface-soft); border: 1px solid var(--line);
+      border-radius: 10px; font-size: 11px; font-weight: 700; color: var(--text);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .2s ease;
+    }
+    .auth-demo-pill:hover { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
+    .auth-error-banner {
+      background: color-mix(in srgb, var(--danger) 18%, transparent); border: 1px solid var(--danger);
+      color: var(--danger); padding: 9px 12px; border-radius: 11px; font-size: 11px;
+      margin-bottom: 14px; display: none; align-items: center; gap: 8px;
+    }
+    .auth-error-banner.active { display: flex; }
+
+    /* ==================== USER PROFILE MENU ==================== */
+    .user-profile-wrap { position: relative; }
+    .user-profile-btn {
+      display: flex; align-items: center; gap: 8px; padding: 3px 12px 3px 3px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft);
+      color: var(--text); cursor: pointer; font-size: 11px; font-weight: 700; transition: all .2s ease;
+    }
+    .user-profile-btn:hover { border-color: var(--accent); background: var(--accent-wash); }
+    .user-avatar-badge {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: white; display: grid; place-items: center; font-size: 11px; font-weight: 800;
+    }
+    .user-profile-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0; width: 250px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+      padding: 12px; box-shadow: 0 15px 35px rgba(0, 0, 0, .28); display: none;
+      flex-direction: column; gap: 5px; z-index: 100; backdrop-filter: blur(14px);
+    }
+    .user-profile-dropdown.open { display: flex; animation: dropdownIn .2s ease forwards; }
+    @keyframes dropdownIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .user-dropdown-info { padding: 9px 11px; background: var(--surface-soft); border-radius: 12px; margin-bottom: 3px; }
+    .user-dropdown-name { font-weight: 800; font-size: 12px; color: var(--text); margin-bottom: 2px; }
+    .user-dropdown-email { font-size: 10px; color: var(--text-soft); word-break: break-all; }
+    .user-dropdown-inst { font-size: 9px; color: var(--accent); font-weight: 700; margin-top: 4px; }
+    .user-dropdown-action {
+      padding: 9px 12px; border: 0; border-radius: 10px; background: transparent;
+      color: var(--text); font-size: 11px; font-weight: 700; text-align: left;
+      display: flex; align-items: center; gap: 9px; cursor: pointer; transition: all .15s ease;
+    }
+    .user-dropdown-action:hover { background: var(--accent-wash); color: var(--accent); }
+    .user-dropdown-action.danger:hover { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
+
       .app-shell { grid-template-columns: 205px minmax(0, 1fr); }
       .main-shell { padding-right: 24px; padding-left: 24px; }
       .planner-columns { grid-template-columns: minmax(0, 1fr) 235px; }
@@ -549,6 +673,27 @@
           <button class="icon-button" id="themeToggle" type="button" aria-label="Activar tema oscuro" title="Cambiar tema"><i class="fa-regular fa-moon"></i></button>
           <button class="secondary-button export-button" id="exportButton" type="button"><i class="fa-solid fa-arrow-up-from-bracket"></i> Exportar</button>
           <button class="primary-button" id="newActivityButton" type="button"><i class="fa-solid fa-plus"></i><span>Nueva actividad</span></button>
+          
+          <div class="user-profile-wrap" id="userProfileWrap">
+            <button class="user-profile-btn" id="userProfileBtn" type="button" aria-label="Menú de usuario" aria-expanded="false">
+              <span class="user-avatar-badge" id="userAvatarBadge">--</span>
+              <span id="userProfileName">Cargando...</span>
+              <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--text-soft)"></i>
+            </button>
+            <div class="user-profile-dropdown" id="userProfileDropdown" role="menu">
+              <div class="user-dropdown-info">
+                <div class="user-dropdown-name" id="userDropdownName">Usuario</div>
+                <div class="user-dropdown-email" id="userDropdownEmail">usuario@correo.com</div>
+                <div class="user-dropdown-inst" id="userDropdownInst">Universidad</div>
+              </div>
+              <button class="user-dropdown-action" id="dropdownSwitchUserBtn" type="button">
+                <i class="fa-solid fa-users"></i> Cambiar de cuenta
+              </button>
+              <button class="user-dropdown-action danger" id="dropdownLogoutBtn" type="button">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar sesión
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -707,10 +852,11 @@
         <div class="form-grid">
           <div class="form-field wide"><label for="activityTitle">¿Qué vas a hacer?</label><input id="activityTitle" name="title" maxlength="120" required placeholder="Ej. Preparar material para el taller"></div>
           <div class="form-field"><label for="activityDate">Día</label><input id="activityDate" name="date" type="date" required></div>
-          <div class="form-field"><label for="activityCategory">Área</label><select id="activityCategory" name="category"><option>Atención comunitaria</option><option>Educación</option><option>Gestión</option><option>Investigación</option><option>Otro</option></select></div>
+          <div class="form-field"><label for="activityCategory">Área</label><select id="activityCategory" name="category" required><option value="" selected disabled>Selecciona un área</option><option>Atención comunitaria</option><option>Educación</option><option>Gestión</option><option>Investigación</option><option>Otro</option></select></div>
           <div class="form-field"><label for="activityStart">Hora de inicio (opcional)</label><input id="activityStart" name="start" type="time"></div>
           <div class="form-field"><label for="activityEnd">Hora de término (opcional)</label><input id="activityEnd" name="end" type="time"></div>
-          <div class="form-field"><label for="activityPriority">Prioridad</label><select id="activityPriority" name="priority"><option value="medium">Normal</option><option value="high">Importante</option><option value="low">Cuando pueda</option></select></div>
+          <div class="form-field"><label for="activityPriority">Prioridad</label><select id="activityPriority" name="priority" required><option value="" selected disabled>Selecciona una prioridad</option><option value="medium">Normal</option><option value="high">Importante</option><option value="low">Cuando pueda</option></select></div>
+          <div class="form-field"><label for="activityDone">Estado</label><select id="activityDone" name="done" required><option value="" selected disabled>Selecciona un estado</option><option value="false">Planeada</option><option value="true">Completada</option></select></div>
           <div class="form-field wide"><label for="activityNotes">Notas (opcional)</label><textarea id="activityNotes" name="notes" maxlength="500" placeholder="Detalles, materiales o personas de contacto..."></textarea></div>
         </div>
         <div class="modal-actions">
@@ -725,6 +871,108 @@
   </div>
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
+  <!-- ==================== AUTHENTICATION MODAL ==================== -->
+  <div class="auth-backdrop" id="authBackdrop" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo-badge">
+          <i class="fa-solid fa-water"></i>
+        </div>
+        <h2 class="auth-title" id="authTitle">SnapDuty</h2>
+        <p class="auth-subtitle">Servicio Social con Propósito · Tu sesión en MongoDB</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab-btn active" id="tabLoginBtn" type="button" role="tab" aria-selected="true">Iniciar Sesión</button>
+        <button class="auth-tab-btn" id="tabRegisterBtn" type="button" role="tab" aria-selected="false">Crear Cuenta</button>
+      </div>
+
+      <div class="auth-error-banner" id="authErrorBanner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="authErrorMsg">Error al iniciar sesión</span>
+      </div>
+
+      <!-- Formulario Login -->
+      <form id="loginForm">
+        <div class="auth-form-group">
+          <div class="auth-field">
+            <label for="loginEmail">Correo electrónico</label>
+            <div class="auth-input-wrap">
+              <i class="fa-regular fa-envelope field-icon"></i>
+              <input class="auth-input" id="loginEmail" type="email" placeholder="carlos.demo@snapduty.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="loginPassword">Contraseña</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-lock field-icon"></i>
+              <input class="auth-input" id="loginPassword" type="password" placeholder="Tu contraseña" required autocomplete="current-password">
+              <button class="auth-toggle-pass" id="toggleLoginPass" type="button" aria-label="Mostrar u ocultar contraseña">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button class="auth-submit-btn" id="loginSubmitBtn" type="submit">
+            <i class="fa-solid fa-right-to-bracket"></i> Entrar a mi espacio
+          </button>
+        </div>
+      </form>
+
+      <!-- Formulario Registro -->
+      <form id="registerForm" class="hidden">
+        <div class="auth-form-group">
+          <div class="auth-field">
+            <label for="regName">Nombre completo</label>
+            <div class="auth-input-wrap">
+              <i class="fa-regular fa-user field-icon"></i>
+              <input class="auth-input" id="regName" type="text" placeholder="Ej. Ana Morales" required>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="regInstitution">Institución / Universidad</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-building-columns field-icon"></i>
+              <input class="auth-input" id="regInstitution" type="text" placeholder="Ej. Universidad Autónoma" required>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="regEmail">Correo electrónico</label>
+            <div class="auth-input-wrap">
+              <i class="fa-regular fa-envelope field-icon"></i>
+              <input class="auth-input" id="regEmail" type="email" placeholder="correo@ejemplo.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="regPassword">Contraseña (mínimo 6 caracteres)</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-lock field-icon"></i>
+              <input class="auth-input" id="regPassword" type="password" placeholder="Crea una contraseña segura" minlength="6" required autocomplete="new-password">
+              <button class="auth-toggle-pass" id="toggleRegPass" type="button" aria-label="Mostrar u ocultar contraseña">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button class="auth-submit-btn" id="regSubmitBtn" type="submit">
+            <i class="fa-solid fa-user-plus"></i> Registrarse e iniciar
+          </button>
+        </div>
+      </form>
+
+      <!-- Accesos Rápidos Demo -->
+      <div class="auth-demo-section">
+        <div class="auth-demo-label">⚡ Acceso rápido con sesiones de prueba:</div>
+        <div class="auth-demo-pills">
+          <button class="auth-demo-pill" id="demoCarlosBtn" type="button" title="Iniciar como Carlos Mendoza">
+            <i class="fa-solid fa-user-graduate"></i> Carlos M.
+          </button>
+          <button class="auth-demo-pill" id="demoSofiaBtn" type="button" title="Iniciar como Sofía García">
+            <i class="fa-solid fa-user-tie"></i> Sofía G.
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     (() => {
       "use strict";
@@ -733,8 +981,13 @@
       const THEME_KEY = "servicio_social_theme";
       const SERVICE_TIMERS_KEY = "marea_daily_service_timers_v1";
       const REFLECTION_KEY = "marea_planner_reflection_v1";
-      const DAILY_HOURS_GOAL = 4;
-      const WEEKLY_HOURS_GOAL = 20;
+      const TOKEN_KEY = "snapduty_auth_token_v1";
+      const USER_KEY = "snapduty_auth_user_v1";
+      let currentUser = null;
+      let DAILY_HOURS_GOAL = 4;
+      let WEEKLY_HOURS_GOAL = 20;
+      let TOTAL_HOURS_GOAL = 480;
+
       const CATEGORIES = ["Atención comunitaria", "Educación", "Gestión", "Investigación", "Otro"];
       const $ = (id) => document.getElementById(id);
       const dateAtNoon = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12);
@@ -756,6 +1009,114 @@
       let timerInterval = null;
       const API_BASE = window.location.origin.startsWith("http") ? "" : "http://localhost:3000";
       let isMongoConnected = false;
+
+      function getAuthToken() {
+        return localStorage.getItem(TOKEN_KEY) || "";
+      }
+
+      function getCurrentUser() {
+        try {
+          const raw = localStorage.getItem(USER_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function setAuthSession(token, user) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        currentUser = user;
+        updateUserUI(user);
+      }
+
+      function clearAuthSession() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        currentUser = null;
+        tasks = [];
+        serviceTimers = {};
+        localStorage.removeItem(TASKS_KEY);
+        localStorage.removeItem(SERVICE_TIMERS_KEY);
+        updateUserUI(null);
+        renderAll();
+        openAuthModal("Has cerrado sesión. Ingresa con tu cuenta para continuar.");
+      }
+
+      function updateUserUI(user) {
+        if (!user) {
+          if ($("userAvatarBadge")) $("userAvatarBadge").textContent = "--";
+          if ($("userProfileName")) $("userProfileName").textContent = "Iniciar sesión";
+          if ($("userDropdownName")) $("userDropdownName").textContent = "Invitado";
+          if ($("userDropdownEmail")) $("userDropdownEmail").textContent = "Sin sesión activa";
+          if ($("userDropdownInst")) $("userDropdownInst").textContent = "Haz clic para ingresar";
+          return;
+        }
+        const initials = user.name
+          .split(" ")
+          .filter(Boolean)
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase() || "SS";
+        const firstName = user.name.split(" ")[0];
+
+        if ($("userAvatarBadge")) $("userAvatarBadge").textContent = initials;
+        if ($("userProfileName")) $("userProfileName").textContent = firstName;
+        if ($("userDropdownName")) $("userDropdownName").textContent = user.name;
+        if ($("userDropdownEmail")) $("userDropdownEmail").textContent = user.email;
+        if ($("userDropdownInst")) $("userDropdownInst").textContent = user.institution || user.programName || "Universidad";
+
+        if (user.weeklyHours) WEEKLY_HOURS_GOAL = Number(user.weeklyHours);
+        if (user.dailyHours) DAILY_HOURS_GOAL = Number(user.dailyHours);
+        if (user.totalHours) TOTAL_HOURS_GOAL = Number(user.totalHours);
+        if ($("sidebarGoal")) $("sidebarGoal").textContent = WEEKLY_HOURS_GOAL;
+      }
+
+      async function apiFetch(endpoint, options = {}) {
+        const token = getAuthToken();
+        const headers = {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        try {
+          const res = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers
+          });
+
+          if (res.status === 401 && !endpoint.includes("/auth/")) {
+            clearAuthSession();
+            openAuthModal("Tu sesión ha expirado. Por favor ingresa de nuevo.");
+          }
+          return res;
+        } catch (err) {
+          console.warn(`Error en llamada API ${endpoint}:`, err);
+          throw err;
+        }
+      }
+
+      function openAuthModal(msg = "") {
+        const banner = $("authErrorBanner");
+        if (msg) {
+          $("authErrorMsg").textContent = msg;
+          banner.classList.add("active");
+        } else {
+          banner.classList.remove("active");
+        }
+        $("authBackdrop").classList.add("active");
+      }
+
+      function closeAuthModal() {
+        $("authBackdrop").classList.remove("active");
+      }
+
+      function showAuthError(msg) {
+        $("authErrorMsg").textContent = msg;
+        $("authErrorBanner").classList.add("active");
+      }
 
       function updateDbBadge(connected, text) {
         isMongoConnected = connected;
@@ -1097,9 +1458,8 @@
         tickServiceTimer();
         showToast("Jornada iniciada. Tu salida estimada ya está calculada.", "success");
         if (isMongoConnected) {
-          fetch(`${API_BASE}/api/timers`, {
+          apiFetch('/api/timers', {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ date: selectedDate, startAt: start.getTime(), notified: false })
           }).catch((err) => console.warn("No se pudo registrar la jornada en MongoDB:", err));
         }
@@ -1122,7 +1482,7 @@
           renderAll();
           showToast("Puedes volver a ingresar tu hora de inicio.", "info");
           if (isMongoConnected) {
-            fetch(`${API_BASE}/api/timers/${selectedDate}`, { method: "DELETE" })
+            apiFetch(`/api/timers/${selectedDate}`, { method: "DELETE" })
               .catch((err) => console.warn("No se pudo eliminar la jornada en MongoDB:", err));
           }
         } else {
@@ -1141,9 +1501,8 @@
             timer.notified = true;
             if (!persistServiceTimers()) timer.notified = false;
             else if (isMongoConnected) {
-              fetch(`${API_BASE}/api/timers/${date}`, {
+              apiFetch(`/api/timers/${date}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ notified: true })
               }).catch(() => {});
             }
@@ -1299,10 +1658,11 @@
         $("activityId").value = task?.id || "";
         $("activityTitle").value = task?.title || "";
         $("activityDate").value = task?.date || date;
-        $("activityCategory").value = task?.category || CATEGORIES[0];
+        $("activityCategory").value = task?.category || "";
         $("activityStart").value = task?.start || "";
         $("activityEnd").value = task?.end || "";
-        $("activityPriority").value = task?.priority || "medium";
+        $("activityPriority").value = task?.priority || "";
+        $("activityDone").value = task ? String(task.done) : "";
         $("activityNotes").value = task?.notes || "";
         $("modalTitle").textContent = task ? "Editar actividad" : "Nueva actividad";
         $("deleteFromModal").classList.toggle("hidden", !task);
@@ -1323,8 +1683,15 @@
         const date = $("activityDate").value;
         const start = $("activityStart").value;
         const end = $("activityEnd").value;
+        const category = $("activityCategory").value;
+        const priority = $("activityPriority").value;
+        const done = $("activityDone").value;
         if (!title || !date || !parseDate(date).getTime()) {
           showToast("Escribe un nombre y selecciona una fecha válida.", "error");
+          return;
+        }
+        if (!CATEGORIES.includes(category) || !["high", "medium", "low"].includes(priority) || !["true", "false"].includes(done)) {
+          showToast("Selecciona el área, la prioridad y el estado de la actividad.", "error");
           return;
         }
         if (Boolean(start) !== Boolean(end)) {
@@ -1340,12 +1707,12 @@
           id: existing?.id || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
           title: title.slice(0, 120),
           date,
-          category: CATEGORIES.includes($("activityCategory").value) ? $("activityCategory").value : "Otro",
+          category,
           start,
           end,
-          priority: ["high", "medium", "low"].includes($("activityPriority").value) ? $("activityPriority").value : "medium",
+          priority,
           notes: $("activityNotes").value.trim().slice(0, 500),
-          done: existing?.done || false,
+          done: done === "true",
           createdAt: existing?.createdAt || new Date().toISOString()
         };
         if (existing) tasks = tasks.map((task) => task.id === id ? next : task);
@@ -1355,9 +1722,8 @@
         closeModal();
         if (persistTasks()) showToast(existing ? "Actividad actualizada." : "Actividad agregada a tu agenda.", "success");
         if (isMongoConnected) {
-          fetch(`${API_BASE}/api/activities`, {
+          apiFetch('/api/activities', {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(next)
           }).catch((err) => console.warn("Error guardando actividad en MongoDB:", err));
         }
@@ -1369,7 +1735,7 @@
         tasks = tasks.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry);
         if (persistTasks()) showToast(task.done ? "Actividad marcada como pendiente." : "¡Actividad completada! Buen trabajo.", "success");
         if (isMongoConnected) {
-          fetch(`${API_BASE}/api/activities/${id}/toggle`, { method: "PATCH" })
+          apiFetch(`/api/activities/${id}/toggle`, { method: "PATCH" })
             .catch((err) => console.warn("Error al actualizar estado en MongoDB:", err));
         }
       }
@@ -1380,7 +1746,7 @@
         tasks = tasks.filter((entry) => entry.id !== id);
         if (persistTasks()) showToast("Actividad eliminada.", "info");
         if (isMongoConnected) {
-          fetch(`${API_BASE}/api/activities/${id}`, { method: "DELETE" })
+          apiFetch(`/api/activities/${id}`, { method: "DELETE" })
             .catch((err) => console.warn("Error al eliminar en MongoDB:", err));
         }
       }
@@ -1520,9 +1886,8 @@
         try {
           localStorage.setItem(THEME_KEY, themeVal);
           if (isMongoConnected) {
-            fetch(`${API_BASE}/api/settings/theme`, {
+            apiFetch('/api/settings/theme', {
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ value: themeVal })
             }).catch((e) => console.warn("No se pudo guardar tema en MongoDB:", e));
           }
@@ -1542,9 +1907,8 @@
           localStorage.setItem(REFLECTION_KEY, noteVal);
           showToast("Reflexión guardada.", "success");
           if (isMongoConnected) {
-            fetch(`${API_BASE}/api/settings/reflection`, {
+            apiFetch('/api/settings/reflection', {
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ value: noteVal })
             }).catch((e) => console.warn("No se pudo guardar reflexión en MongoDB:", e));
           }
@@ -1554,6 +1918,151 @@
         }
       });
 
+      // ==================== AUTH & PROFILE LISTENERS ====================
+      $("userProfileBtn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!getAuthToken()) {
+          openAuthModal();
+          return;
+        }
+        $("userProfileDropdown").classList.toggle("open");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#userProfileWrap")) {
+          $("userProfileDropdown").classList.remove("open");
+        }
+      });
+
+      $("dropdownSwitchUserBtn").addEventListener("click", () => {
+        $("userProfileDropdown").classList.remove("open");
+        openAuthModal();
+      });
+
+      $("dropdownLogoutBtn").addEventListener("click", () => {
+        $("userProfileDropdown").classList.remove("open");
+        clearAuthSession();
+        showToast("Sesión cerrada correctamente.", "info");
+      });
+
+      $("tabLoginBtn").addEventListener("click", () => {
+        $("tabLoginBtn").classList.add("active");
+        $("tabRegisterBtn").classList.remove("active");
+        $("loginForm").classList.remove("hidden");
+        $("registerForm").classList.add("hidden");
+        $("authErrorBanner").classList.remove("active");
+      });
+
+      $("tabRegisterBtn").addEventListener("click", () => {
+        $("tabRegisterBtn").classList.add("active");
+        $("tabLoginBtn").classList.remove("active");
+        $("registerForm").classList.remove("hidden");
+        $("loginForm").classList.add("hidden");
+        $("authErrorBanner").classList.remove("active");
+      });
+
+      $("toggleLoginPass").addEventListener("click", () => {
+        const input = $("loginPassword");
+        const isPass = input.type === "password";
+        input.type = isPass ? "text" : "password";
+        $("toggleLoginPass").innerHTML = `<i class="fa-regular ${isPass ? "fa-eye-slash" : "fa-eye"}"></i>`;
+      });
+
+      $("toggleRegPass").addEventListener("click", () => {
+        const input = $("regPassword");
+        const isPass = input.type === "password";
+        input.type = isPass ? "text" : "password";
+        $("toggleRegPass").innerHTML = `<i class="fa-regular ${isPass ? "fa-eye-slash" : "fa-eye"}"></i>`;
+      });
+
+      $("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("loginEmail").value.trim();
+        const password = $("loginPassword").value;
+        const btn = $("loginSubmitBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json.error || "Credenciales incorrectas");
+
+          setAuthSession(json.token, json.user);
+          closeAuthModal();
+          showToast(`¡Hola de nuevo, ${json.user.name}!`, "success");
+          await initMongoSync();
+        } catch (err) {
+          showAuthError(err.message || "Error al iniciar sesión");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar a mi espacio';
+        }
+      });
+
+      $("registerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = $("regName").value.trim();
+        const institution = $("regInstitution").value.trim();
+        const email = $("regEmail").value.trim();
+        const password = $("regPassword").value;
+        const btn = $("regSubmitBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creando cuenta...';
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, institution, email, password })
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json.error || "No se pudo registrar la cuenta");
+
+          setAuthSession(json.token, json.user);
+          closeAuthModal();
+          showToast(`¡Bienvenido a SnapDuty, ${json.user.name}!`, "success");
+          await initMongoSync();
+        } catch (err) {
+          showAuthError(err.message || "Error al registrar la cuenta");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Registrarse e iniciar';
+        }
+      });
+
+      async function loginWithCredentials(email, password) {
+        try {
+          showToast("Conectando con sesión demo...", "info");
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json.error || "Error al conectar demo");
+
+          setAuthSession(json.token, json.user);
+          closeAuthModal();
+          showToast(`Sesión activa: ${json.user.name}`, "success");
+          await initMongoSync();
+        } catch (err) {
+          showAuthError(err.message);
+        }
+      }
+
+      $("demoCarlosBtn").addEventListener("click", () => {
+        loginWithCredentials("carlos.demo@snapduty.com", "Password123!");
+      });
+
+      $("demoSofiaBtn").addEventListener("click", () => {
+        loginWithCredentials("sofia.garcia@snapduty.com", "Password123!");
+      });
+
       const savedTheme = localStorage.getItem(THEME_KEY);
       if (savedTheme === "dark") {
         document.documentElement.classList.add("dark");
@@ -1561,80 +2070,61 @@
         $("themeToggle").setAttribute("aria-label", "Activar tema claro");
       }
       renderAll();
-      if (Object.values(serviceTimers).some((timer) => Date.now() < Number(timer.startAt) + DAILY_HOURS_GOAL * 3600000)) {
-        timerInterval = window.setInterval(tickServiceTimer, 1000);
-        tickServiceTimer();
-      } else if (timerForDate(selectedDate)) {
-        tickServiceTimer();
-      }
 
       async function initMongoSync() {
         try {
           updateDbBadge(false, "Conectando...");
-          const res = await fetch(`${API_BASE}/api/bootstrap`);
-          if (!res.ok) throw new Error("API no disponible");
+          const token = getAuthToken();
+
+          if (!token) {
+            updateDbBadge(false, "Sin sesión");
+            openAuthModal();
+            return;
+          }
+
+          const res = await apiFetch("/api/bootstrap");
+          if (!res.ok) {
+            if (res.status === 401) {
+              clearAuthSession();
+              return;
+            }
+            throw new Error("API no disponible");
+          }
+
           const json = await res.json();
           if (!json.success) throw new Error(json.error || "Error al obtener datos");
 
           updateDbBadge(true, "MongoDB Conectado");
           const { data } = json;
 
-          const localTasks = loadTasks();
-          const localTimers = loadServiceTimers();
-          const hasDbData = (data.activities && data.activities.length > 0) || (data.serviceTimers && Object.keys(data.serviceTimers).length > 0);
-          const hasLocalData = localTasks.length > 0 || Object.keys(localTimers).length > 0;
+          currentUser = data.user;
+          updateUserUI(currentUser);
 
-          if (!hasDbData && hasLocalData) {
-            if (localTasks.length > 0) {
-              await fetch(`${API_BASE}/api/activities/bulk-sync`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ activities: localTasks })
-              });
-            }
-            if (Object.keys(localTimers).length > 0) {
-              await fetch(`${API_BASE}/api/timers/bulk-sync`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ timers: localTimers })
-              });
-            }
-            const localReflect = localStorage.getItem(REFLECTION_KEY);
-            if (localReflect) {
-              await fetch(`${API_BASE}/api/settings/reflection`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ value: localReflect })
-              });
-            }
-            const localTheme = localStorage.getItem(THEME_KEY);
-            if (localTheme) {
-              await fetch(`${API_BASE}/api/settings/theme`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ value: localTheme })
-              });
-            }
-            showToast("Registros locales sincronizados con MongoDB.", "success");
-          } else if (hasDbData) {
-            tasks = data.activities || [];
-            serviceTimers = data.serviceTimers || {};
-            localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-            localStorage.setItem(SERVICE_TIMERS_KEY, JSON.stringify(serviceTimers));
+          tasks = data.activities || [];
+          serviceTimers = data.serviceTimers || {};
+          localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+          localStorage.setItem(SERVICE_TIMERS_KEY, JSON.stringify(serviceTimers));
 
-            if (data.reflection !== undefined && data.reflection !== null && $("reflectionNote")) {
-              $("reflectionNote").value = data.reflection;
-              localStorage.setItem(REFLECTION_KEY, data.reflection);
-            }
+          if (data.reflection !== undefined && data.reflection !== null && $("reflectionNote")) {
+            $("reflectionNote").value = data.reflection;
+            localStorage.setItem(REFLECTION_KEY, data.reflection);
+          }
 
-            if (data.theme) {
-              const isDark = data.theme === "dark";
-              document.documentElement.classList.toggle("dark", isDark);
-              $("themeToggle").innerHTML = `<i class="fa-regular ${isDark ? "fa-sun" : "fa-moon"}"></i>`;
-              $("themeToggle").setAttribute("aria-label", isDark ? "Activar tema claro" : "Activar tema oscuro");
-              localStorage.setItem(THEME_KEY, data.theme);
-            }
-            renderAll();
+          if (data.theme) {
+            const isDark = data.theme === "dark";
+            document.documentElement.classList.toggle("dark", isDark);
+            $("themeToggle").innerHTML = `<i class="fa-regular ${isDark ? "fa-sun" : "fa-moon"}"></i>`;
+            $("themeToggle").setAttribute("aria-label", isDark ? "Activar tema claro" : "Activar tema oscuro");
+            localStorage.setItem(THEME_KEY, data.theme);
+          }
+
+          renderAll();
+
+          if (Object.values(serviceTimers).some((timer) => Date.now() < Number(timer.startAt) + DAILY_HOURS_GOAL * 3600000)) {
+            if (timerInterval === null) timerInterval = window.setInterval(tickServiceTimer, 1000);
+            tickServiceTimer();
+          } else if (timerForDate(selectedDate)) {
+            tickServiceTimer();
           }
         } catch (err) {
           console.warn("MongoDB API no disponible:", err);
@@ -1642,6 +2132,10 @@
         }
       }
 
+      const cachedUser = getCurrentUser();
+      if (cachedUser) {
+        updateUserUI(cachedUser);
+      }
       initMongoSync();
     })();
   </script>

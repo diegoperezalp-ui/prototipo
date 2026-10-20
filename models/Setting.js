@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 
 const SettingSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
   key: {
     type: String,
-    required: true,
-    unique: true,
-    index: true
+    required: true
   },
   value: {
     type: mongoose.Schema.Types.Mixed,
@@ -21,5 +25,7 @@ const SettingSchema = new mongoose.Schema({
     }
   }
 });
+
+SettingSchema.index({ userId: 1, key: 1 }, { unique: true });
 
 module.exports = mongoose.model('Setting', SettingSchema);

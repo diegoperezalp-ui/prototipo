@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
 const ActivitySchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
   id: {
     type: String,
     required: true,
-    unique: true,
     index: true
   },
   title: {
@@ -60,9 +65,10 @@ const ActivitySchema = new mongoose.Schema({
   }
 });
 
-// Indexes for fast lookup by date, category, status, and sorting
-ActivitySchema.index({ date: 1, start: 1 });
-ActivitySchema.index({ category: 1 });
-ActivitySchema.index({ done: 1 });
+// Index for unique activity id per user
+ActivitySchema.index({ userId: 1, id: 1 }, { unique: true });
+ActivitySchema.index({ userId: 1, date: 1, start: 1 });
+ActivitySchema.index({ userId: 1, category: 1 });
+ActivitySchema.index({ userId: 1, done: 1 });
 
 module.exports = mongoose.model('Activity', ActivitySchema);

@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
 const ReflectionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
   id: {
     type: String,
     required: true,
-    unique: true,
     index: true
   },
   date: {
@@ -41,6 +46,7 @@ const ReflectionSchema = new mongoose.Schema({
   }
 });
 
-ReflectionSchema.index({ date: -1 });
+ReflectionSchema.index({ userId: 1, id: 1 }, { unique: true });
+ReflectionSchema.index({ userId: 1, date: -1 });
 
 module.exports = mongoose.model('Reflection', ReflectionSchema);

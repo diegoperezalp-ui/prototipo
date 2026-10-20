@@ -4,7 +4,7 @@ const Activity = require('../models/Activity');
 const ServiceTimer = require('../models/ServiceTimer');
 const Setting = require('../models/Setting');
 const Reflection = require('../models/Reflection');
-const Goal = require('../models/Goal');
+const authMiddleware = require('../middleware/auth');
 
 // Helper to calculate hours between "HH:mm" and "HH:mm"
 function calculateHours(start, end) {
@@ -15,26 +15,25 @@ function calculateHours(start, end) {
   return diffMinutes > 0 ? Number((diffMinutes / 60).toFixed(2)) : 0;
 }
 
-// 1. Health & Connection Status with Collection Metrics
+// 1. Health & Connection Status (Público)
 router.get('/status', async (req, res) => {
   try {
-    const [actCount, timerCount, reflectCount, goals] = await Promise.all([
+    const [actCount, timerCount, reflectCount] = await Promise.all([
       Activity.countDocuments(),
       ServiceTimer.countDocuments(),
-      Reflection.countDocuments(),
-      Goal.findOne({ key: 'current' }).lean()
+      Reflection.countDocuments()
     ]);
 
     res.json({
       status: 'ok',
       database: 'MongoDB',
       connected: true,
-      collections: {
+      authEnabled: true,
+      totalSystemRecords: {
         activities: actCount,
         serviceTimers: timerCount,
         reflections: reflectCount
       },
-      goals: goals || { dailyHours: 4, weeklyHours: 20, totalHours: 480 },
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -42,19 +41,22 @@ router.get('/status', async (req, res) => {
   }
 });
 
-// 2. Full Bootstrap Data (Loads everything needed for initial render)
+// A partir de aquí, todas las rutas de datos son privadas y específicas para cada sesión/usuario
+router.use(authMiddleware);
+
+// 2. Full Bootstrap Data por usuario
 router.get('/bootstrap', async (req, res) => {
   try {
-    const [activities, timersList, themeSetting, reflectionSetting, goalsDoc, recentReflections] = await Promise.all([
-      Activity.find({}).sort({ date: 1, start: 1 }).lean(),
-      ServiceTimer.find({}).lean(),
-      Setting.findOne({ key: 'theme' }).lean(),
-      Setting.findOne({ key: 'reflection' }).lean(),
-      Goal.findOne({ key: 'current' }).lean(),
-      Reflection.find({}).sort({ date: -1 }).limit(10).lean()
+    const userId = req.user._id;
+
+    const [activities, timersList, themeSetting, reflectionSetting, recentReflections] = await Promise.all([
+      Activity.find({ userId }).sort({ date: 1, start: 1 }).lean(),
+      ServiceTimer.find({ userId }).lean(),
+      Setting.findOne({ userId, key: 'theme' }).lean(),
+      Setting.findOne({ userId, key: 'reflection' }).lean(),
+      Reflection.find({ userId }).sort({ date: -1 }).limit(10).lean()
     ]);
 
-    // Format service timers into an object map: { [date]: { startAt, notified, ... } }
     const serviceTimers = {};
     for (const t of timersList) {
       serviceTimers[t.date] = {
@@ -69,6 +71,18 @@ router.get('/bootstrap', async (req, res) => {
     res.json({
       success: true,
       data: {
+        user: {
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          institution: req.user.institution,
+          programName: req.user.programName
+        },
+        goals: {
+          dailyHours: req.user.dailyHours || 4,
+          weeklyHours: req.user.weeklyHours || 20,
+          totalHours: req.user.totalHours || 480
+        },
         activities: activities.map(a => ({
           id: a.id,
           title: a.title,
@@ -82,23 +96,23 @@ router.get('/bootstrap', async (req, res) => {
           createdAt: a.createdAt
         })),
         serviceTimers,
-        theme: themeSetting ? themeSetting.value : null,
+        theme: themeSetting ? themeSetting.value : 'dark',
         reflection: reflectionSetting ? reflectionSetting.value : "",
-        goals: goalsDoc || { dailyHours: 4, weeklyHours: 20, totalHours: 480 },
         reflections: recentReflections
       }
     });
   } catch (error) {
-    console.error('Error al obtener bootstrap data:', error);
+    console.error('Error al obtener bootstrap data del usuario:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 3. Activities Endpoints (with rich filtering)
+// 3. Actividades del usuario autenticado
 router.get('/activities', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { date, startDate, endDate, category, status, search } = req.query;
-    const filter = {};
+    const filter = { userId };
 
     if (date) {
       filter.date = date;
@@ -135,6 +149,7 @@ router.get('/activities', async (req, res) => {
 
 router.post('/activities', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id, title, date, category, start, end, priority, notes, done, createdAt } = req.body;
 
     if (!title || !title.trim()) {
@@ -153,9 +168,10 @@ router.post('/activities', async (req, res) => {
     const activityId = id || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
     const activity = await Activity.findOneAndUpdate(
-      { id: activityId },
+      { userId, id: activityId },
       {
         $set: {
+          userId,
           title: title.trim().slice(0, 120),
           date,
           category: category || 'Otro',
@@ -182,7 +198,7 @@ router.post('/activities', async (req, res) => {
 
 router.get('/activities/:id', async (req, res) => {
   try {
-    const activity = await Activity.findOne({ id: req.params.id });
+    const activity = await Activity.findOne({ userId: req.user._id, id: req.params.id });
     if (!activity) {
       return res.status(404).json({ success: false, error: 'Actividad no encontrada' });
     }
@@ -194,6 +210,7 @@ router.get('/activities/:id', async (req, res) => {
 
 router.put('/activities/:id', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id } = req.params;
     const { title, date, category, start, end, priority, notes, done } = req.body;
 
@@ -214,7 +231,12 @@ router.put('/activities/:id', async (req, res) => {
     if (notes !== undefined) updateData.notes = notes.trim().slice(0, 500);
     if (done !== undefined) updateData.done = Boolean(done);
 
-    const activity = await Activity.findOneAndUpdate({ id }, { $set: updateData }, { returnDocument: 'after', runValidators: true });
+    const activity = await Activity.findOneAndUpdate(
+      { userId, id },
+      { $set: updateData },
+      { returnDocument: 'after', runValidators: true }
+    );
+
     if (!activity) {
       return res.status(404).json({ success: false, error: 'Actividad no encontrada' });
     }
@@ -227,8 +249,9 @@ router.put('/activities/:id', async (req, res) => {
 
 router.patch('/activities/:id/toggle', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id } = req.params;
-    const activity = await Activity.findOne({ id });
+    const activity = await Activity.findOne({ userId, id });
     if (!activity) {
       return res.status(404).json({ success: false, error: 'Actividad no encontrada' });
     }
@@ -244,8 +267,9 @@ router.patch('/activities/:id/toggle', async (req, res) => {
 
 router.delete('/activities/:id', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id } = req.params;
-    const result = await Activity.findOneAndDelete({ id });
+    const result = await Activity.findOneAndDelete({ userId, id });
     if (!result) {
       return res.status(404).json({ success: false, error: 'Actividad no encontrada' });
     }
@@ -255,9 +279,10 @@ router.delete('/activities/:id', async (req, res) => {
   }
 });
 
-// Bulk sync activities (for importing from local storage without overwriting newer data)
+// Sincronización masiva para el usuario
 router.post('/activities/bulk-sync', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { activities } = req.body;
     if (!Array.isArray(activities)) {
       return res.status(400).json({ success: false, error: 'Se esperaba un arreglo de actividades' });
@@ -265,9 +290,10 @@ router.post('/activities/bulk-sync', async (req, res) => {
 
     const operations = activities.map(act => ({
       updateOne: {
-        filter: { id: act.id },
+        filter: { userId, id: act.id },
         update: {
           $setOnInsert: {
+            userId,
             id: act.id,
             title: act.title,
             date: act.date,
@@ -288,7 +314,7 @@ router.post('/activities/bulk-sync', async (req, res) => {
       await Activity.bulkWrite(operations);
     }
 
-    const all = await Activity.find({}).sort({ date: 1 });
+    const all = await Activity.find({ userId }).sort({ date: 1 });
     res.json({ success: true, activities: all });
   } catch (error) {
     console.error('Error en bulk-sync de actividades:', error);
@@ -296,10 +322,11 @@ router.post('/activities/bulk-sync', async (req, res) => {
   }
 });
 
-// 4. Daily Service Timers Endpoints
+// 4. Jornadas Diarias / Cronómetro del usuario
 router.get('/timers', async (req, res) => {
   try {
-    const timers = await ServiceTimer.find({}).sort({ date: 1 });
+    const userId = req.user._id;
+    const timers = await ServiceTimer.find({ userId }).sort({ date: 1 });
     if (req.query.format === 'list') {
       return res.json({ success: true, timers });
     }
@@ -322,6 +349,7 @@ router.get('/timers', async (req, res) => {
 
 router.post('/timers', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { date, startAt, endAt, hoursWorked, notified, notes } = req.body;
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return res.status(400).json({ success: false, error: 'Fecha de jornada inválida' });
@@ -331,9 +359,10 @@ router.post('/timers', async (req, res) => {
     }
 
     const timer = await ServiceTimer.findOneAndUpdate(
-      { date },
+      { userId, date },
       {
         $set: {
+          userId,
           date,
           startAt: Number(startAt),
           endAt: endAt ? Number(endAt) : null,
@@ -354,6 +383,7 @@ router.post('/timers', async (req, res) => {
 
 router.patch('/timers/:date', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { date } = req.params;
     const { notified, startAt, endAt, hoursWorked, notes } = req.body;
 
@@ -364,7 +394,11 @@ router.patch('/timers/:date', async (req, res) => {
     if (hoursWorked !== undefined) update.hoursWorked = Number(hoursWorked);
     if (notes !== undefined) update.notes = String(notes);
 
-    const timer = await ServiceTimer.findOneAndUpdate({ date }, { $set: update }, { returnDocument: 'after' });
+    const timer = await ServiceTimer.findOneAndUpdate(
+      { userId, date },
+      { $set: update },
+      { returnDocument: 'after' }
+    );
     if (!timer) {
       return res.status(404).json({ success: false, error: 'Jornada no encontrada' });
     }
@@ -377,8 +411,9 @@ router.patch('/timers/:date', async (req, res) => {
 
 router.delete('/timers/:date', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { date } = req.params;
-    await ServiceTimer.findOneAndDelete({ date });
+    await ServiceTimer.findOneAndDelete({ userId, date });
     res.json({ success: true, message: 'Jornada reiniciada / eliminada' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -387,6 +422,7 @@ router.delete('/timers/:date', async (req, res) => {
 
 router.post('/timers/bulk-sync', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { timers } = req.body;
     if (!timers || typeof timers !== 'object') {
       return res.status(400).json({ success: false, error: 'Se esperaba un objeto de jornadas' });
@@ -394,9 +430,10 @@ router.post('/timers/bulk-sync', async (req, res) => {
 
     const operations = Object.entries(timers).map(([date, t]) => ({
       updateOne: {
-        filter: { date },
+        filter: { userId, date },
         update: {
           $setOnInsert: {
+            userId,
             date,
             startAt: Number(t.startAt),
             notified: !!t.notified
@@ -410,7 +447,7 @@ router.post('/timers/bulk-sync', async (req, res) => {
       await ServiceTimer.bulkWrite(operations);
     }
 
-    const all = await ServiceTimer.find({});
+    const all = await ServiceTimer.find({ userId });
     const timerMap = {};
     for (const t of all) {
       timerMap[t.date] = { startAt: t.startAt, notified: t.notified };
@@ -421,10 +458,10 @@ router.post('/timers/bulk-sync', async (req, res) => {
   }
 });
 
-// 5. Settings (Reflection, Theme, Preferences)
+// 5. Ajustes y Preferencias del usuario
 router.get('/settings/:key', async (req, res) => {
   try {
-    const setting = await Setting.findOne({ key: req.params.key });
+    const setting = await Setting.findOne({ userId: req.user._id, key: req.params.key });
     res.json({ success: true, key: req.params.key, value: setting ? setting.value : null });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -433,12 +470,13 @@ router.get('/settings/:key', async (req, res) => {
 
 router.put('/settings/:key', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { key } = req.params;
     const { value } = req.body;
 
     const setting = await Setting.findOneAndUpdate(
-      { key },
-      { key, value },
+      { userId, key },
+      { userId, key, value },
       { upsert: true, returnDocument: 'after' }
     );
 
@@ -448,51 +486,48 @@ router.put('/settings/:key', async (req, res) => {
   }
 });
 
-// 6. Social Service Goals Endpoints
+// 6. Metas del usuario autenticado
 router.get('/goals', async (req, res) => {
-  try {
-    let goal = await Goal.findOne({ key: 'current' });
-    if (!goal) {
-      goal = await Goal.create({
-        key: 'current',
-        dailyHours: 4,
-        weeklyHours: 20,
-        totalHours: 480,
-        programName: 'Servicio Social con Propósito'
-      });
+  res.json({
+    success: true,
+    goals: {
+      dailyHours: req.user.dailyHours || 4,
+      weeklyHours: req.user.weeklyHours || 20,
+      totalHours: req.user.totalHours || 480,
+      institution: req.user.institution,
+      programName: req.user.programName
     }
-    res.json({ success: true, goals: goal });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+  });
 });
 
 router.put('/goals', async (req, res) => {
   try {
-    const { dailyHours, weeklyHours, totalHours, institution, programName } = req.body;
-    const update = {};
-    if (dailyHours !== undefined) update.dailyHours = Number(dailyHours);
-    if (weeklyHours !== undefined) update.weeklyHours = Number(weeklyHours);
-    if (totalHours !== undefined) update.totalHours = Number(totalHours);
-    if (institution !== undefined) update.institution = institution;
-    if (programName !== undefined) update.programName = programName;
+    const { dailyHours, weeklyHours, totalHours } = req.body;
+    const user = req.user;
 
-    const goal = await Goal.findOneAndUpdate(
-      { key: 'current' },
-      { $set: update },
-      { upsert: true, returnDocument: 'after', runValidators: true }
-    );
+    if (dailyHours !== undefined) user.dailyHours = Number(dailyHours);
+    if (weeklyHours !== undefined) user.weeklyHours = Number(weeklyHours);
+    if (totalHours !== undefined) user.totalHours = Number(totalHours);
 
-    res.json({ success: true, goals: goal });
+    await user.save();
+
+    res.json({
+      success: true,
+      goals: {
+        dailyHours: user.dailyHours,
+        weeklyHours: user.weeklyHours,
+        totalHours: user.totalHours
+      }
+    });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
 });
 
-// 7. Bitácora / Reflection Journal Endpoints
+// 7. Bitácora / Reflexiones del usuario
 router.get('/reflections', async (req, res) => {
   try {
-    const reflections = await Reflection.find({}).sort({ date: -1, createdAt: -1 });
+    const reflections = await Reflection.find({ userId: req.user._id }).sort({ date: -1, createdAt: -1 });
     res.json({ success: true, count: reflections.length, reflections });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -501,6 +536,7 @@ router.get('/reflections', async (req, res) => {
 
 router.post('/reflections', async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id, date, title, content, category, hoursLogged } = req.body;
     if (!content || !content.trim()) {
       return res.status(400).json({ success: false, error: 'El contenido de la reflexión es obligatorio' });
@@ -508,9 +544,10 @@ router.post('/reflections', async (req, res) => {
 
     const reflectionId = id || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
     const reflection = await Reflection.findOneAndUpdate(
-      { id: reflectionId },
+      { userId, id: reflectionId },
       {
         $set: {
+          userId,
           date: date || new Date().toISOString().slice(0, 10),
           title: (title || 'Reflexión de servicio').trim(),
           content: content.trim(),
@@ -522,10 +559,9 @@ router.post('/reflections', async (req, res) => {
       { upsert: true, returnDocument: 'after' }
     );
 
-    // Also update the global quick reflection setting for backward compatibility
     await Setting.findOneAndUpdate(
-      { key: 'reflection' },
-      { key: 'reflection', value: content.trim() },
+      { userId, key: 'reflection' },
+      { userId, key: 'reflection', value: content.trim() },
       { upsert: true }
     );
 
@@ -537,7 +573,7 @@ router.post('/reflections', async (req, res) => {
 
 router.delete('/reflections/:id', async (req, res) => {
   try {
-    const result = await Reflection.findOneAndDelete({ id: req.params.id });
+    const result = await Reflection.findOneAndDelete({ userId: req.user._id, id: req.params.id });
     if (!result) {
       return res.status(404).json({ success: false, error: 'Reflexión no encontrada' });
     }
@@ -547,20 +583,20 @@ router.delete('/reflections/:id', async (req, res) => {
   }
 });
 
-// 8. Real-time Impact Statistics (MongoDB Aggregation Pipeline)
+// 8. Estadísticas e Impacto del usuario en tiempo real
 router.get('/stats', async (req, res) => {
   try {
-    const [activities, timers, goals] = await Promise.all([
-      Activity.find({}).lean(),
-      ServiceTimer.find({}).lean(),
-      Goal.findOne({ key: 'current' }).lean()
+    const userId = req.user._id;
+
+    const [activities, timers] = await Promise.all([
+      Activity.find({ userId }).lean(),
+      ServiceTimer.find({ userId }).lean()
     ]);
 
     const totalActivities = activities.length;
     const completedActivities = activities.filter(a => a.done).length;
     const pendingActivities = totalActivities - completedActivities;
 
-    // Calculate hours from activities with start and end
     let totalActivityHours = 0;
     const categoryStats = {
       "Atención comunitaria": { count: 0, hours: 0 },
@@ -585,17 +621,16 @@ router.get('/stats', async (req, res) => {
       }
     }
 
-    // Calculate hours from service timers (max 4h per day)
     let totalTimerHours = 0;
     const now = Date.now();
     for (const t of timers) {
       activeDates.add(t.date);
       const elapsed = Math.max(0, now - Number(t.startAt));
-      const hours = Math.min(4, elapsed / 3600000);
+      const hours = Math.min(req.user.dailyHours || 4, elapsed / 3600000);
       totalTimerHours += Number(hours.toFixed(2));
     }
 
-    const currentGoals = goals || { dailyHours: 4, weeklyHours: 20, totalHours: 480 };
+    const totalGoal = req.user.totalHours || 480;
 
     res.json({
       success: true,
@@ -610,10 +645,10 @@ router.get('/stats', async (req, res) => {
         activeDaysCount: activeDates.size,
         categoryStats,
         goals: {
-          dailyGoal: currentGoals.dailyHours,
-          weeklyGoal: currentGoals.weeklyHours,
-          totalGoal: currentGoals.totalHours,
-          totalProgressPercent: Number(((totalTimerHours / currentGoals.totalHours) * 100).toFixed(1))
+          dailyGoal: req.user.dailyHours || 4,
+          weeklyGoal: req.user.weeklyHours || 20,
+          totalGoal,
+          totalProgressPercent: Number(((totalTimerHours / totalGoal) * 100).toFixed(1))
         }
       }
     });
@@ -622,70 +657,31 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// 9. Database Backup & Restore Endpoints
+// 9. Respaldo y Restauración por usuario
 router.get('/export', async (req, res) => {
   try {
-    const [activities, timers, settings, reflections, goals] = await Promise.all([
-      Activity.find({}).lean(),
-      ServiceTimer.find({}).lean(),
-      Setting.find({}).lean(),
-      Reflection.find({}).lean(),
-      Goal.findOne({ key: 'current' }).lean()
+    const userId = req.user._id;
+    const [activities, timers, settings, reflections] = await Promise.all([
+      Activity.find({ userId }).lean(),
+      ServiceTimer.find({ userId }).lean(),
+      Setting.find({ userId }).lean(),
+      Reflection.find({ userId }).lean()
     ]);
 
     res.json({
       exportedAt: new Date().toISOString(),
       appName: 'SnapDuty',
-      version: '1.0.0',
-      database: 'MongoDB',
+      user: {
+        name: req.user.name,
+        email: req.user.email,
+        institution: req.user.institution
+      },
       data: {
         activities,
         serviceTimers: timers,
         settings,
-        reflections,
-        goals
+        reflections
       }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-router.post('/import', async (req, res) => {
-  try {
-    const { data } = req.body;
-    if (!data) {
-      return res.status(400).json({ success: false, error: 'Faltan datos para importar' });
-    }
-
-    let actImported = 0;
-    if (Array.isArray(data.activities)) {
-      for (const a of data.activities) {
-        if (a.id && a.title && a.date) {
-          await Activity.findOneAndUpdate({ id: a.id }, { $set: a }, { upsert: true });
-          actImported++;
-        }
-      }
-    }
-
-    let timerImported = 0;
-    if (data.serviceTimers) {
-      const timersList = Array.isArray(data.serviceTimers)
-        ? data.serviceTimers
-        : Object.entries(data.serviceTimers).map(([date, val]) => ({ date, ...val }));
-
-      for (const t of timersList) {
-        if (t.date && t.startAt) {
-          await ServiceTimer.findOneAndUpdate({ date: t.date }, { $set: t }, { upsert: true });
-          timerImported++;
-        }
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'Datos importados exitosamente',
-      imported: { activities: actImported, serviceTimers: timerImported }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
