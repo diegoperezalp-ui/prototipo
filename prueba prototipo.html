@@ -448,11 +448,28 @@
     .form-field { min-width: 0; }
     .form-field.wide { grid-column: 1 / -1; }
     .form-field label { display: block; margin-bottom: 6px; color: var(--text-soft); font-size: 9px; font-weight: 800; }
-    .form-field input, .form-field select, .form-field textarea {
+    .form-field input:not([type="radio"]), .form-field select, .form-field textarea {
       width: 100%; min-height: 39px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px;
       background: var(--surface); color: var(--text); font-size: 10px;
     }
     .form-field textarea { min-height: 75px; resize: vertical; }
+    .category-field { min-width: 0; padding: 0; border: 0; }
+    .category-field legend { margin-bottom: 6px; color: var(--text-soft); font-size: 9px; font-weight: 800; }
+    .category-radio-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .category-option { min-width: 0; position: relative; }
+    .category-radio-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .category-option-content {
+      min-height: 40px; padding: 8px 10px; position: relative; display: flex; align-items: center; gap: 8px;
+      border-radius: 5px; background: var(--surface-soft); color: var(--text-soft); cursor: pointer; font-size: 10px; transition: background .2s, color .2s;
+    }
+    .category-option-content > i:first-child { width: 15px; flex: 0 0 15px; text-align: center; }
+    .category-option-content > span { min-width: 0; }
+    .category-option-check { margin-left: auto; opacity: 0; color: var(--accent-strong); }
+    .category-radio-input:hover + .category-option-content { background: var(--accent-wash); color: var(--text); }
+    .category-radio-input:checked + .category-option-content { background: var(--accent-wash); color: var(--text); box-shadow: inset 3px 0 var(--accent); }
+    .category-radio-input:checked + .category-option-content .category-option-check { opacity: 1; }
+    .category-radio-input:focus-visible { outline: none; }
+    .category-radio-input:focus-visible + .category-option-content { outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent); outline-offset: 2px; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 9px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
     .modal-actions-right { display: flex; gap: 8px; }
     .toast-container { position: fixed; z-index: 30; right: 20px; bottom: 20px; display: grid; gap: 8px; pointer-events: none; }
@@ -670,6 +687,7 @@
       .filter-select { flex: 1; }
       .form-grid { grid-template-columns: 1fr; }
       .form-field.wide { grid-column: auto; }
+      .category-radio-list { grid-template-columns: 1fr; }
       .modal-backdrop { align-items: start; padding: 12px; }
       .modal { width: 100%; max-height: calc(100dvh - 24px); padding: 16px; border-radius: 18px; }
       .auth-backdrop { align-items: flex-start; overflow-y: auto; padding: 12px; }
@@ -917,7 +935,16 @@
         <div class="form-grid">
           <div class="form-field wide"><label for="activityTitle">¿Qué vas a hacer?</label><input id="activityTitle" name="title" maxlength="120" required placeholder="Ej. Preparar material para el taller"></div>
           <div class="form-field"><label for="activityDate">Día</label><input id="activityDate" name="date" type="date" required></div>
-          <div class="form-field"><label for="activityCategory">Área</label><select id="activityCategory" name="category" required><option value="" selected disabled>Selecciona un área</option><option>Atención comunitaria</option><option>Educación</option><option>Gestión</option><option>Investigación</option><option>Otro</option></select></div>
+          <fieldset class="form-field wide category-field">
+            <legend>Área</legend>
+            <div class="category-radio-list">
+              <label class="category-option"><input class="category-radio-input" type="radio" name="category" value="Atención comunitaria" required><span class="category-option-content"><i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i><span>Atención comunitaria</span><i class="fa-solid fa-check category-option-check" aria-hidden="true"></i></span></label>
+              <label class="category-option"><input class="category-radio-input" type="radio" name="category" value="Educación" required><span class="category-option-content"><i class="fa-solid fa-book-open" aria-hidden="true"></i><span>Educación</span><i class="fa-solid fa-check category-option-check" aria-hidden="true"></i></span></label>
+              <label class="category-option"><input class="category-radio-input" type="radio" name="category" value="Gestión" required><span class="category-option-content"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Gestión</span><i class="fa-solid fa-check category-option-check" aria-hidden="true"></i></span></label>
+              <label class="category-option"><input class="category-radio-input" type="radio" name="category" value="Investigación" required><span class="category-option-content"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Investigación</span><i class="fa-solid fa-check category-option-check" aria-hidden="true"></i></span></label>
+              <label class="category-option"><input class="category-radio-input" type="radio" name="category" value="Otro" required><span class="category-option-content"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span>Otro</span><i class="fa-solid fa-check category-option-check" aria-hidden="true"></i></span></label>
+            </div>
+          </fieldset>
           <div class="form-field"><label for="activityStart">Hora de inicio (opcional)</label><input id="activityStart" name="start" type="time"></div>
           <div class="form-field"><label for="activityEnd">Hora de término (opcional)</label><input id="activityEnd" name="end" type="time"></div>
           <div class="form-field"><label for="activityPriority">Prioridad</label><select id="activityPriority" name="priority" required><option value="" selected disabled>Selecciona una prioridad</option><option value="medium">Normal</option><option value="high">Importante</option><option value="low">Cuando pueda</option></select></div>
@@ -1784,7 +1811,9 @@
         $("activityId").value = task?.id || "";
         $("activityTitle").value = task?.title || "";
         $("activityDate").value = task?.date || date;
-        $("activityCategory").value = task?.category || "";
+        $("activityForm").querySelectorAll('input[name="category"]').forEach((input) => {
+          input.checked = input.value === (task?.category || "");
+        });
         $("activityStart").value = task?.start || "";
         $("activityEnd").value = task?.end || "";
         $("activityPriority").value = task?.priority || "";
@@ -1809,7 +1838,7 @@
         const date = $("activityDate").value;
         const start = $("activityStart").value;
         const end = $("activityEnd").value;
-        const category = $("activityCategory").value;
+        const category = $("activityForm").querySelector('input[name="category"]:checked')?.value || "";
         const priority = $("activityPriority").value;
         const done = $("activityDone").value;
         if (!title || !date || !parseDate(date).getTime()) {
