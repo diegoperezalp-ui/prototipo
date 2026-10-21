@@ -67,7 +67,37 @@
       transition: background-color .25s, color .25s;
     }
     button, input, select, textarea { font: inherit; }
-    button { color: inherit; }
+    button {
+      position: relative;
+      isolation: isolate;
+      color: inherit;
+    }
+    button::before {
+      content: "";
+      display: block;
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(8, 77, 126, 0), rgba(8, 77, 126, .42)), rgba(47, 255, 255, .24);
+      box-shadow: inset 0 0 12px rgba(151, 200, 255, .44), inset 0 0 0 1px rgba(184, 238, 255, .24);
+      pointer-events: none;
+      z-index: -1;
+    }
+    button:not(.day-card.today)::after {
+      content: "";
+      display: block;
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(184, 238, 255, .32);
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(8, 77, 126, 0), rgba(8, 77, 126, .42)), rgba(47, 255, 255, .24);
+      box-shadow: inset 0 0 12px rgba(151, 200, 255, .44);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s ease-in;
+      z-index: -1;
+    }
+    button:not(.day-card.today):hover::after { opacity: 1; }
     button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent);
       outline-offset: 2px;
