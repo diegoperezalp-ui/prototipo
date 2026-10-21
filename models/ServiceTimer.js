@@ -17,6 +17,19 @@ const ServiceTimerSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'El timestamp de inicio es obligatorio']
   },
+  activeSince: {
+    type: Number,
+    default: null
+  },
+  pausedAt: {
+    type: Number,
+    default: null
+  },
+  elapsedMs: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   endAt: {
     type: Number,
     default: null

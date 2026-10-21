@@ -15,6 +15,15 @@ function calculateHours(start, end) {
   return diffMinutes > 0 ? Number((diffMinutes / 60).toFixed(2)) : 0;
 }
 
+function workedHours(timer, now = Date.now()) {
+  const elapsedMs = Number.isFinite(Number(timer.elapsedMs))
+    ? Number(timer.elapsedMs)
+    : Number(timer.hoursWorked || 0) * 3600000;
+  const activeSince = timer.activeSince ?? (!timer.pausedAt && !timer.endAt ? timer.startAt : null);
+  const activeMs = activeSince ? Math.max(0, now - Number(activeSince)) : 0;
+  return Math.max(0, elapsedMs + activeMs) / 3600000;
+}
+
 // 1. Health & Connection Status (Público)
 router.get('/status', async (req, res) => {
   try {
@@ -61,6 +70,9 @@ router.get('/bootstrap', async (req, res) => {
     for (const t of timersList) {
       serviceTimers[t.date] = {
         startAt: t.startAt,
+        activeSince: t.activeSince ?? null,
+        pausedAt: t.pausedAt ?? null,
+        elapsedMs: t.elapsedMs ?? 0,
         endAt: t.endAt || null,
         hoursWorked: t.hoursWorked || 0,
         notified: !!t.notified,
@@ -335,6 +347,9 @@ router.get('/timers', async (req, res) => {
     for (const t of timers) {
       timerMap[t.date] = {
         startAt: t.startAt,
+        activeSince: t.activeSince ?? null,
+        pausedAt: t.pausedAt ?? null,
+        elapsedMs: t.elapsedMs ?? 0,
         endAt: t.endAt || null,
         hoursWorked: t.hoursWorked || 0,
         notified: t.notified,
@@ -350,7 +365,7 @@ router.get('/timers', async (req, res) => {
 router.post('/timers', async (req, res) => {
   try {
     const userId = req.user._id;
-    const { date, startAt, endAt, hoursWorked, notified, notes } = req.body;
+    const { date, startAt, activeSince, pausedAt, elapsedMs, endAt, hoursWorked, notified, notes } = req.body;
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return res.status(400).json({ success: false, error: 'Fecha de jornada inválida' });
     }
@@ -365,6 +380,9 @@ router.post('/timers', async (req, res) => {
           userId,
           date,
           startAt: Number(startAt),
+          activeSince: activeSince !== undefined ? (activeSince === null ? null : Number(activeSince)) : Number(startAt),
+          pausedAt: pausedAt ? Number(pausedAt) : null,
+          elapsedMs: elapsedMs !== undefined ? Math.max(0, Number(elapsedMs)) : 0,
           endAt: endAt ? Number(endAt) : null,
           hoursWorked: hoursWorked !== undefined ? Number(hoursWorked) : 0,
           notified: Boolean(notified),
@@ -385,12 +403,15 @@ router.patch('/timers/:date', async (req, res) => {
   try {
     const userId = req.user._id;
     const { date } = req.params;
-    const { notified, startAt, endAt, hoursWorked, notes } = req.body;
+    const { notified, startAt, activeSince, pausedAt, elapsedMs, endAt, hoursWorked, notes } = req.body;
 
     const update = {};
     if (notified !== undefined) update.notified = Boolean(notified);
     if (startAt !== undefined) update.startAt = Number(startAt);
-    if (endAt !== undefined) update.endAt = Number(endAt);
+    if (activeSince !== undefined) update.activeSince = activeSince === null ? null : Number(activeSince);
+    if (pausedAt !== undefined) update.pausedAt = pausedAt === null ? null : Number(pausedAt);
+    if (elapsedMs !== undefined) update.elapsedMs = Math.max(0, Number(elapsedMs));
+    if (endAt !== undefined) update.endAt = endAt === null ? null : Number(endAt);
     if (hoursWorked !== undefined) update.hoursWorked = Number(hoursWorked);
     if (notes !== undefined) update.notes = String(notes);
 
@@ -436,6 +457,9 @@ router.post('/timers/bulk-sync', async (req, res) => {
             userId,
             date,
             startAt: Number(t.startAt),
+            activeSince: t.activeSince !== undefined ? t.activeSince : Number(t.startAt),
+            pausedAt: t.pausedAt ?? null,
+            elapsedMs: Math.max(0, Number(t.elapsedMs || 0)),
             notified: !!t.notified
           }
         },
@@ -450,7 +474,16 @@ router.post('/timers/bulk-sync', async (req, res) => {
     const all = await ServiceTimer.find({ userId });
     const timerMap = {};
     for (const t of all) {
-      timerMap[t.date] = { startAt: t.startAt, notified: t.notified };
+      timerMap[t.date] = {
+        startAt: t.startAt,
+        activeSince: t.activeSince ?? null,
+        pausedAt: t.pausedAt ?? null,
+        elapsedMs: t.elapsedMs ?? 0,
+        endAt: t.endAt || null,
+        hoursWorked: t.hoursWorked || 0,
+        notified: t.notified,
+        notes: t.notes || ''
+      };
     }
     res.json({ success: true, timers: timerMap });
   } catch (error) {
@@ -625,8 +658,7 @@ router.get('/stats', async (req, res) => {
     const now = Date.now();
     for (const t of timers) {
       activeDates.add(t.date);
-      const elapsed = Math.max(0, now - Number(t.startAt));
-      const hours = Math.min(req.user.dailyHours || 4, elapsed / 3600000);
+      const hours = workedHours(t, now);
       totalTimerHours += Number(hours.toFixed(2));
     }
 
