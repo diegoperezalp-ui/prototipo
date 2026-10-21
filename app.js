@@ -29,6 +29,7 @@ async function ensureDatabaseConnection(req, res, next) {
 
 app.use('/api/auth', ensureDatabaseConnection, authRoutes);
 app.use('/api', ensureDatabaseConnection, apiRoutes);
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
