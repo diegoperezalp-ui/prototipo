@@ -305,6 +305,10 @@
     .service-time-field { display: grid; gap: 5px; min-width: 130px; }
     .service-time-field label { color: var(--text-soft); font-size: 8px; font-weight: 800; }
     .service-time-field input { height: 35px; padding: 0 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--text); font-size: 10px; }
+    .service-target-field { max-width: 92px; }
+    .service-target-field input { width: 92px; }
+    .service-target-edit { display: flex; align-items: end; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .service-target-edit .secondary-button { min-height: 32px; }
     .service-estimate { margin-left: auto; color: var(--text-soft); font-size: 8px; }
     .service-estimate strong { color: var(--text); }
     .service-start { min-height: 35px; padding: 0 11px; font-size: 9px; }
@@ -1324,6 +1328,10 @@
       }
 
       function timerForDate(date) { return serviceTimers[date] || null; }
+      function timerTargetHours(timer) {
+        const target = Number(timer?.targetHours);
+        return target >= 1 && target <= 12 ? target : DAILY_HOURS_GOAL;
+      }
       function workedMilliseconds(timer, now = Date.now()) {
         if (!timer) return 0;
         const saved = Number.isFinite(Number(timer.elapsedMs))
@@ -1439,14 +1447,16 @@
         const isToday = selectedDate === dateKey(today);
         const weekday = isWeekday(date);
         const currentHours = serviceHours(selectedDate);
-        const reachedGoal = currentHours >= DAILY_HOURS_GOAL;
+        const targetHours = timerTargetHours(timer);
+        const reachedGoal = currentHours >= targetHours;
         const finished = Boolean(timer?.endAt);
         const paused = Boolean(timer?.pausedAt);
-        const meter = `<div class="service-meter-label"><span>Progreso de hoy</span><strong id="serviceHoursText">${formatHours(currentHours)} / ${DAILY_HOURS_GOAL} h</strong></div>
-          <div class="service-segments" id="serviceSegments" role="progressbar" aria-label="Horas de servicio social completadas hoy" aria-valuemin="0" aria-valuemax="${DAILY_HOURS_GOAL}" aria-valuenow="${formatHours(currentHours)}">
-            ${Array.from({ length: DAILY_HOURS_GOAL }, () => '<span class="service-segment"><span></span></span>').join("")}
+        const segmentCount = Math.ceil(targetHours);
+        const meter = `<div class="service-meter-label"><span>Progreso de hoy</span><strong id="serviceHoursText">${formatHours(currentHours)} / ${formatHours(targetHours)} h</strong></div>
+          <div class="service-segments" id="serviceSegments" role="progressbar" aria-label="Horas de servicio social completadas hoy" aria-valuemin="0" aria-valuemax="${targetHours}" aria-valuenow="${formatHours(currentHours)}" style="grid-template-columns: repeat(${segmentCount}, minmax(0, 1fr))">
+            ${Array.from({ length: segmentCount }, () => '<span class="service-segment"><span></span></span>').join("")}
           </div>
-          <div class="service-hour-labels" aria-hidden="true"><span>1 h</span><span>2 h</span><span>3 h</span><span>4 h</span></div>`;
+          <div class="service-hour-labels" aria-hidden="true" style="grid-template-columns: repeat(${segmentCount}, minmax(0, 1fr))">${Array.from({ length: segmentCount }, (_, index) => `<span>${index + 1} h</span>`).join("")}</div>`;
         let body;
 
         if (!weekday) {
@@ -1458,6 +1468,7 @@
               <p>Inicio <strong id="serviceStartedAt"></strong> · salida estimada <strong id="serviceEndsAt"></strong><br><span id="serviceTimerHint"></span></p>
               <div class="service-timer-actions">
                 ${finished ? "" : `<button class="secondary-button" id="toggleServicePauseButton" type="button"><i class="fa-solid ${paused ? "fa-play" : "fa-pause"}"></i> ${paused ? "Reanudar" : "Pausar"}</button><button class="primary-button" id="finishServiceButton" type="button"><i class="fa-solid fa-check"></i> Finalizar y registrar</button>`}
+                ${finished ? "" : `<div class="service-target-edit"><div class="service-time-field service-target-field"><label for="serviceTargetHours">Excepción (horas)</label><input id="serviceTargetHours" type="number" min="1" max="12" step="0.5" value="${targetHours}"></div><button class="secondary-button" id="saveServiceTargetButton" type="button"><i class="fa-solid fa-sliders"></i> Aplicar</button></div>`}
                 <button class="text-button" id="resetServiceButton" type="button"><i class="fa-solid fa-rotate-left"></i> Corregir registro</button>
               </div>
             </div>
@@ -1466,9 +1477,10 @@
           const now = new Date();
           body = `<div class="service-controls">
             <div class="service-time-field"><label for="serviceStartTime">¿A qué hora comenzaste?</label><input id="serviceStartTime" type="time" value="${formatLocalTime(now)}"></div>
+            <div class="service-time-field service-target-field"><label for="serviceTargetHours">Horas de hoy</label><input id="serviceTargetHours" type="number" min="1" max="12" step="0.5" value="${DAILY_HOURS_GOAL}"></div>
             <div class="service-estimate">Hora estimada de salida<br><strong id="serviceEstimatedEnd">${formatLocalTime(new Date(now.getTime() + DAILY_HOURS_GOAL * 3600000))}</strong></div>
             <button class="primary-button service-start" id="startServiceButton" type="button"><i class="fa-solid fa-play"></i> Iniciar cronómetro</button>
-          </div><p class="service-notice">La meta diaria es de ${DAILY_HOURS_GOAL} h. Puedes pausar y registrar el tiempo real, sea menor o mayor.</p>`;
+          </div><p class="service-notice">La meta normal es de ${DAILY_HOURS_GOAL} h. Si necesitas una excepción, modifica las horas antes de iniciar; el cronómetro se detendrá al alcanzarlas.</p>`;
         } else {
           body = `<div class="service-disabled"><strong>El cronómetro se inicia el mismo día del servicio.</strong> Vuelve a esta sección el día de tu jornada para registrar tu hora de inicio y ver la cuenta regresiva.</div>`;
         }
@@ -1487,8 +1499,10 @@
         const value = $("serviceStartTime")?.value;
         if (!value) return;
         const [hour, minute] = value.split(":").map(Number);
+        const target = Number($("serviceTargetHours")?.value);
+        const targetHours = target >= 1 && target <= 12 ? target : DAILY_HOURS_GOAL;
         const end = new Date(parseDate(selectedDate));
-        end.setHours(hour + DAILY_HOURS_GOAL, minute, 0, 0);
+        end.setHours(hour + Math.floor(targetHours), minute + Math.round((targetHours % 1) * 60), 0, 0);
         $("serviceEstimatedEnd").textContent = formatLocalTime(end);
       }
 
@@ -1496,8 +1510,10 @@
         const segments = $("serviceSegments");
         if (!segments || date !== selectedDate) return;
         const hours = serviceHours(date, now);
+        const targetHours = timerTargetHours(timerForDate(date));
         segments.setAttribute("aria-valuenow", formatHours(hours));
-        $("serviceHoursText").textContent = `${formatHours(hours)} / ${DAILY_HOURS_GOAL} h`;
+        segments.setAttribute("aria-valuemax", String(targetHours));
+        $("serviceHoursText").textContent = `${formatHours(hours)} / ${formatHours(targetHours)} h`;
         const badge = $("dailyServicePanel").querySelector(".service-badge");
         if (badge) {
           const timer = timerForDate(date);
@@ -1514,13 +1530,14 @@
         if (!timer) return;
         const startedAt = Number(timer.startAt);
         const elapsed = workedMilliseconds(timer, now);
-        const remaining = Math.max(0, DAILY_HOURS_GOAL * 3600000 - elapsed);
+        const targetHours = timerTargetHours(timer);
+        const remaining = Math.max(0, targetHours * 3600000 - elapsed);
         const started = new Date(startedAt);
         const estimatedEnd = new Date(now + remaining);
         const display = $("serviceTimerDisplay");
         const orb = $("serviceTimerOrb");
         if (display) display.textContent = formatCountdown(elapsed / 1000);
-        if (orb) orb.style.setProperty("--progress", `${Math.min(100, elapsed / (DAILY_HOURS_GOAL * 3600000) * 100)}`);
+        if (orb) orb.style.setProperty("--progress", `${Math.min(100, elapsed / (targetHours * 3600000) * 100)}`);
         if ($("serviceStartedAt")) $("serviceStartedAt").textContent = formatLocalTime(started);
         if ($("serviceEndsAt")) $("serviceEndsAt").textContent = timer.endAt ? formatLocalTime(new Date(timer.endAt)) : timer.pausedAt ? "En pausa" : formatLocalTime(estimatedEnd);
         if ($("serviceTimerMessage")) $("serviceTimerMessage").textContent = timer.endAt ? "Jornada registrada" : timer.pausedAt ? "Jornada en pausa" : remaining > 0 ? "Jornada en curso" : "Meta alcanzada, puedes continuar";
@@ -1529,8 +1546,8 @@
           : timer.pausedAt
             ? `${formatHours(elapsed / 3600000)} horas acumuladas. Reanuda cuando continúes.`
             : remaining > 0
-              ? `Llevas ${formatHours(elapsed / 3600000)} h. Faltan ${formatCountdown(remaining / 1000)} para la meta; puedes finalizar antes o continuar después.`
-              : `Llevas ${formatHours(elapsed / 3600000)} h. La meta está cumplida; el cronómetro seguirá contando hasta que finalices.`;
+              ? `Llevas ${formatHours(elapsed / 3600000)} h. Faltan ${formatCountdown(remaining / 1000)} para tu objetivo. Al alcanzarlo se registrará automáticamente.`
+              : `Llevas ${formatHours(elapsed / 3600000)} h y alcanzaste tu objetivo; la jornada se registrará automáticamente.`;
         updateServiceMeter(selectedDate, now);
       }
 
@@ -1587,6 +1604,11 @@
           return;
         }
         const value = $("serviceStartTime").value;
+        const targetHours = Number($("serviceTargetHours").value);
+        if (!Number.isFinite(targetHours) || targetHours < 1 || targetHours > 12) {
+          showToast("Las horas de excepción deben estar entre 1 y 12.", "error");
+          return;
+        }
         if (!value) {
           showToast("Indica la hora en que comenzaste tu jornada.", "error");
           return;
@@ -1602,7 +1624,7 @@
           showToast("La hora de inicio no puede estar en el futuro.", "error");
           return;
         }
-        serviceTimers[selectedDate] = { startAt: start.getTime(), activeSince: start.getTime(), elapsedMs: 0, notified: false };
+        serviceTimers[selectedDate] = { startAt: start.getTime(), activeSince: start.getTime(), elapsedMs: 0, targetHours, notified: false };
         if (!persistServiceTimers()) {
           delete serviceTimers[selectedDate];
           return;
@@ -1615,7 +1637,7 @@
         if (isMongoConnected) {
           apiFetch('/api/timers', {
             method: "POST",
-            body: JSON.stringify({ date: selectedDate, startAt: start.getTime(), activeSince: start.getTime(), elapsedMs: 0, notified: false })
+            body: JSON.stringify({ date: selectedDate, startAt: start.getTime(), activeSince: start.getTime(), elapsedMs: 0, targetHours, notified: false })
           }).catch((err) => console.warn("No se pudo registrar la jornada en MongoDB:", err));
         }
       }
@@ -1645,6 +1667,27 @@
         }
       }
 
+      function saveServiceTarget() {
+        const timer = timerForDate(selectedDate);
+        const input = $("serviceTargetHours");
+        if (!timer || !input || timer.endAt) return;
+        const targetHours = Number(input.value);
+        if (!Number.isFinite(targetHours) || targetHours < 1 || targetHours > 12) {
+          showToast("Las horas de excepción deben estar entre 1 y 12.", "error");
+          return;
+        }
+        const elapsed = workedMilliseconds(timer, Date.now());
+        timer.targetHours = targetHours;
+        if (!persistServiceTimers()) return;
+        updateServiceOnServer(selectedDate, timer);
+        if (elapsed >= targetHours * 3600000) {
+          finishDailyService();
+        } else {
+          renderAll();
+          showToast(`Objetivo actualizado a ${formatHours(targetHours)} horas.`, "success");
+        }
+      }
+
       function tickServiceTimer() {
         const now = Date.now();
         let hasActiveTimer = false;
@@ -1653,19 +1696,29 @@
           if (!timer.endAt && !timer.pausedAt) {
             hasActiveTimer = true;
           }
-          if (!timer.endAt && !timer.pausedAt && elapsed >= DAILY_HOURS_GOAL * 3600000 && !timer.notified) {
+          const targetHours = timerTargetHours(timer);
+          if (!timer.endAt && elapsed >= targetHours * 3600000) {
+            timer.elapsedMs = targetHours * 3600000;
+            timer.endAt = now;
+            timer.hoursWorked = Number(targetHours.toFixed(4));
+            timer.activeSince = null;
+            timer.pausedAt = null;
             timer.notified = true;
-            if (!persistServiceTimers()) timer.notified = false;
-            else if (isMongoConnected) {
+            persistServiceTimers();
+            if (isMongoConnected) {
               apiFetch(`/api/timers/${date}`, {
                 method: "PATCH",
-                body: JSON.stringify({ notified: true })
+                body: JSON.stringify({ elapsedMs: timer.elapsedMs, endAt: timer.endAt, hoursWorked: timer.hoursWorked, activeSince: null, pausedAt: null, notified: true })
               }).catch(() => {});
             }
-            showToast(`Alcanzaste ${DAILY_HOURS_GOAL} horas de servicio el ${formatDate(parseDate(date))}.`, "success");
+            showToast(`Jornada registrada automáticamente: ${formatHours(targetHours)} horas.`, "success");
+            renderAll();
             if ("Notification" in window && Notification.permission === "granted") {
-              new Notification("SnapDuty · Meta alcanzada", { body: `Alcanzaste ${DAILY_HOURS_GOAL} horas. El cronómetro sigue contando hasta que finalices.` });
+              new Notification("SnapDuty · Jornada registrada", { body: `Completaste ${formatHours(targetHours)} horas y el cronómetro se detuvo automáticamente.` });
             }
+          } else if (!timer.endAt && !timer.pausedAt && elapsed >= targetHours * 3600000 && !timer.notified) {
+            timer.notified = true;
+            persistServiceTimers();
           }
         }
         updateServiceTimerDisplay(timerForDate(selectedDate), now);
@@ -2032,12 +2085,13 @@
       $("activityStatusFilter").addEventListener("change", renderActivities);
       $("activityCategoryFilter").addEventListener("change", renderActivities);
       $("dailyServicePanel").addEventListener("input", (event) => {
-        if (event.target.id === "serviceStartTime") updateEstimatedEnd();
+        if (event.target.id === "serviceStartTime" || event.target.id === "serviceTargetHours") updateEstimatedEnd();
       });
       $("dailyServicePanel").addEventListener("click", (event) => {
         if (event.target.closest("#startServiceButton")) startDailyService();
         if (event.target.closest("#toggleServicePauseButton")) toggleDailyServicePause();
         if (event.target.closest("#finishServiceButton")) finishDailyService();
+        if (event.target.closest("#saveServiceTargetButton")) saveServiceTarget();
         if (event.target.closest("#resetServiceButton")) resetDailyService();
       });
       $("themeToggle").addEventListener("click", () => {

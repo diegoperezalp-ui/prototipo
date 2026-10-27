@@ -30,6 +30,12 @@ const ServiceTimerSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  targetHours: {
+    type: Number,
+    default: 4,
+    min: 1,
+    max: 12
+  },
   endAt: {
     type: Number,
     default: null

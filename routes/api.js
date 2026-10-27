@@ -73,6 +73,7 @@ router.get('/bootstrap', async (req, res) => {
         activeSince: t.activeSince ?? null,
         pausedAt: t.pausedAt ?? null,
         elapsedMs: t.elapsedMs ?? 0,
+        targetHours: t.targetHours ?? 4,
         endAt: t.endAt || null,
         hoursWorked: t.hoursWorked || 0,
         notified: !!t.notified,
@@ -350,6 +351,7 @@ router.get('/timers', async (req, res) => {
         activeSince: t.activeSince ?? null,
         pausedAt: t.pausedAt ?? null,
         elapsedMs: t.elapsedMs ?? 0,
+        targetHours: t.targetHours ?? 4,
         endAt: t.endAt || null,
         hoursWorked: t.hoursWorked || 0,
         notified: t.notified,
@@ -365,7 +367,7 @@ router.get('/timers', async (req, res) => {
 router.post('/timers', async (req, res) => {
   try {
     const userId = req.user._id;
-    const { date, startAt, activeSince, pausedAt, elapsedMs, endAt, hoursWorked, notified, notes } = req.body;
+    const { date, startAt, activeSince, pausedAt, elapsedMs, targetHours, endAt, hoursWorked, notified, notes } = req.body;
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return res.status(400).json({ success: false, error: 'Fecha de jornada inválida' });
     }
@@ -383,6 +385,7 @@ router.post('/timers', async (req, res) => {
           activeSince: activeSince !== undefined ? (activeSince === null ? null : Number(activeSince)) : Number(startAt),
           pausedAt: pausedAt ? Number(pausedAt) : null,
           elapsedMs: elapsedMs !== undefined ? Math.max(0, Number(elapsedMs)) : 0,
+          targetHours: targetHours !== undefined ? Math.min(12, Math.max(1, Number(targetHours))) : 4,
           endAt: endAt ? Number(endAt) : null,
           hoursWorked: hoursWorked !== undefined ? Number(hoursWorked) : 0,
           notified: Boolean(notified),
@@ -403,7 +406,7 @@ router.patch('/timers/:date', async (req, res) => {
   try {
     const userId = req.user._id;
     const { date } = req.params;
-    const { notified, startAt, activeSince, pausedAt, elapsedMs, endAt, hoursWorked, notes } = req.body;
+    const { notified, startAt, activeSince, pausedAt, elapsedMs, targetHours, endAt, hoursWorked, notes } = req.body;
 
     const update = {};
     if (notified !== undefined) update.notified = Boolean(notified);
@@ -411,6 +414,7 @@ router.patch('/timers/:date', async (req, res) => {
     if (activeSince !== undefined) update.activeSince = activeSince === null ? null : Number(activeSince);
     if (pausedAt !== undefined) update.pausedAt = pausedAt === null ? null : Number(pausedAt);
     if (elapsedMs !== undefined) update.elapsedMs = Math.max(0, Number(elapsedMs));
+    if (targetHours !== undefined) update.targetHours = Math.min(12, Math.max(1, Number(targetHours)));
     if (endAt !== undefined) update.endAt = endAt === null ? null : Number(endAt);
     if (hoursWorked !== undefined) update.hoursWorked = Number(hoursWorked);
     if (notes !== undefined) update.notes = String(notes);
@@ -460,6 +464,7 @@ router.post('/timers/bulk-sync', async (req, res) => {
             activeSince: t.activeSince !== undefined ? t.activeSince : Number(t.startAt),
             pausedAt: t.pausedAt ?? null,
             elapsedMs: Math.max(0, Number(t.elapsedMs || 0)),
+            targetHours: t.targetHours !== undefined ? Math.min(12, Math.max(1, Number(t.targetHours))) : 4,
             notified: !!t.notified
           }
         },
@@ -479,6 +484,7 @@ router.post('/timers/bulk-sync', async (req, res) => {
         activeSince: t.activeSince ?? null,
         pausedAt: t.pausedAt ?? null,
         elapsedMs: t.elapsedMs ?? 0,
+        targetHours: t.targetHours ?? 4,
         endAt: t.endAt || null,
         hoursWorked: t.hoursWorked || 0,
         notified: t.notified,
