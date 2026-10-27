@@ -58,11 +58,12 @@ router.get('/bootstrap', async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const [activities, timersList, themeSetting, reflectionSetting, recentReflections] = await Promise.all([
+    const [activities, timersList, themeSetting, reflectionSetting, interfaceSetting, recentReflections] = await Promise.all([
       Activity.find({ userId }).sort({ date: 1, start: 1 }).lean(),
       ServiceTimer.find({ userId }).lean(),
       Setting.findOne({ userId, key: 'theme' }).lean(),
       Setting.findOne({ userId, key: 'reflection' }).lean(),
+      Setting.findOne({ userId, key: 'interface' }).lean(),
       Reflection.find({ userId }).sort({ date: -1 }).limit(10).lean()
     ]);
 
@@ -110,6 +111,7 @@ router.get('/bootstrap', async (req, res) => {
         })),
         serviceTimers,
         theme: themeSetting ? themeSetting.value : 'dark',
+        interfacePreferences: interfaceSetting ? interfaceSetting.value : null,
         reflection: reflectionSetting ? reflectionSetting.value : "",
         reflections: recentReflections
       }

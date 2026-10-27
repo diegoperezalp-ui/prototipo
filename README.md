@@ -30,7 +30,7 @@ Cada registro en MongoDB está estrictamente vinculado al `userId` del estudiant
 | **Agenda y Calendario** | [`Activity`](models/Activity.js) | CRUD de actividades asociadas al usuario con índice compuesto `{ userId: 1, id: 1 }`. |
 | **Cronómetro y Medidor Diario** | [`ServiceTimer`](models/ServiceTimer.js) | Meta normal de 4 horas, cierre y registro automáticos; permite fijar una excepción de 1 a 12 horas. Conserva la meta por jornada y usa el índice `{ userId: 1, date: 1 }`. |
 | **Bitácora y Reflexiones** | [`Reflection`](models/Reflection.js) | Diario de aprendizajes y horas registradas por el usuario. |
-| **Preferencias de Usuario** | [`Setting`](models/Setting.js) | Tema visual (claro / oscuro) y reflexiones rápidas con índice `{ userId: 1, key: 1 }`. |
+| **Preferencias de Usuario** | [`Setting`](models/Setting.js) | Tema claro / oscuro, acento de color, espaciado cómodo / compacto, reducción de movimiento y reflexiones, guardados por usuario con índice `{ userId: 1, key: 1 }`. |
 
 ---
 

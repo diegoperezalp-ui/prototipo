@@ -222,6 +222,18 @@
     .view { display: none; animation: arrive .3s ease both; }
     .view.active { display: block; }
     @keyframes arrive { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    html.compact .main-shell { padding-top: 20px; }
+    html.compact .topbar { margin-bottom: 18px; }
+    html.compact .brand { padding-bottom: 20px; }
+    html.compact .day-card { min-height: 82px; padding: 9px; }
+    html.compact .metric-card { min-height: 72px; padding: 12px; }
+    html.compact .agenda-panel { padding: 15px; }
+    html.compact .service-card { margin-top: 10px; padding: 12px; }
+    html.compact .task-row { padding: 10px 0; }
+    html.compact .side-panel { padding: 14px; }
+    html.compact .overview-stat { padding: 12px; }
+    html.compact .calendar-panel { padding: 14px; }
 
     .week-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 19px; }
     .week-heading { display: flex; align-items: center; gap: 13px; }
@@ -448,6 +460,25 @@
     .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
     .modal-header h2 { margin: 0; font-family: "DM Serif Display", Georgia, serif; font-size: 23px; font-weight: 400; }
     .modal-header p { margin: 5px 0 0; color: var(--text-soft); font-size: 9px; }
+    .customization-modal { width: min(100%, 470px); }
+    .customization-groups { display: grid; gap: 18px; }
+    .customization-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+    .customization-group + .customization-group { padding-top: 16px; border-top: 1px solid var(--line); }
+    .customization-label { display: block; margin: 0 0 10px; color: var(--text); font-size: 11px; font-weight: 800; }
+    .palette-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .palette-choice { min-width: 0; min-height: 65px; padding: 9px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text-soft); cursor: pointer; font-size: 9px; font-weight: 700; text-align: left; }
+    .palette-choice:hover { border-color: var(--accent-light); background: var(--accent-wash); color: var(--text); }
+    .palette-choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+    .palette-swatch { width: 21px; height: 21px; border: 2px solid color-mix(in srgb, var(--swatch) 28%, white); border-radius: 50%; background: var(--swatch); box-shadow: inset 0 0 0 2px var(--surface); }
+    .density-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+    .density-choice { min-height: 36px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--text-soft); cursor: pointer; font-size: 10px; font-weight: 700; }
+    .density-choice[aria-pressed="true"] { border-color: var(--line); background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(20, 30, 40, .08); }
+    .motion-setting { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .motion-setting .customization-label { margin: 0; }
+    .motion-switch { width: 46px; height: 27px; padding: 3px; flex: 0 0 46px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-strong); cursor: pointer; transition: background .2s, border-color .2s; }
+    .motion-switch span { width: 19px; height: 19px; display: block; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); transition: transform .2s; }
+    .motion-switch[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); }
+    .motion-switch[aria-checked="true"] span { transform: translateX(19px); }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-field { min-width: 0; }
     .form-field.wide { grid-column: 1 / -1; }
@@ -690,6 +721,7 @@
       .modal { width: 100%; max-height: calc(100dvh - 24px); padding: 16px; border-radius: 18px; }
       .auth-backdrop { align-items: flex-start; overflow-y: auto; padding: 12px; }
       .auth-card { max-width: 440px; margin: auto; padding: 26px 20px 22px; border-radius: 22px; }
+      .customization-modal { padding: 18px; }
       .toast-container { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); left: 12px; }
       .toast { max-width: none; }
     }
@@ -788,6 +820,7 @@
             <span class="db-indicator-dot"></span>
             <span id="dbStatusText">Conectando...</span>
           </div>
+          <button class="icon-button" id="customizeButton" type="button" aria-label="Personalizar interfaz" title="Personalizar interfaz"><i class="fa-solid fa-sliders"></i></button>
           <button class="icon-button" id="themeToggle" type="button" aria-label="Activar tema oscuro" title="Cambiar tema"><i class="fa-regular fa-moon"></i></button>
           <button class="secondary-button export-button" id="exportButton" type="button"><i class="fa-solid fa-arrow-up-from-bracket"></i> Exportar</button>
           <button class="primary-button" id="newActivityButton" type="button" aria-label="Nueva actividad"><i class="fa-solid fa-plus"></i><span>Nueva actividad</span></button>
@@ -996,6 +1029,36 @@
       </form>
     </section>
   </div>
+  <div class="modal-backdrop" id="customizationBackdrop" role="presentation">
+    <section class="modal customization-modal" role="dialog" aria-modal="true" aria-labelledby="customizationTitle">
+      <div class="modal-header">
+        <div><h2 id="customizationTitle">Personalizar interfaz</h2><p>Ajusta SnapDuty a tu manera.</p></div>
+        <button class="icon-button" id="closeCustomization" type="button" aria-label="Cerrar personalización"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="customization-groups">
+        <fieldset class="customization-group">
+          <legend class="customization-label">Color de acento</legend>
+          <div class="palette-options" role="group" aria-label="Elegir color de acento">
+            <button class="palette-choice" type="button" data-palette="rose" aria-pressed="true"><span class="palette-swatch" style="--swatch:#bd7189"></span><span>Rosa</span></button>
+            <button class="palette-choice" type="button" data-palette="sage" aria-pressed="false"><span class="palette-swatch" style="--swatch:#6e9178"></span><span>Salvia</span></button>
+            <button class="palette-choice" type="button" data-palette="ocean" aria-pressed="false"><span class="palette-swatch" style="--swatch:#6f88a9"></span><span>Océano</span></button>
+            <button class="palette-choice" type="button" data-palette="plum" aria-pressed="false"><span class="palette-swatch" style="--swatch:#927993"></span><span>Malva</span></button>
+          </div>
+        </fieldset>
+        <section class="customization-group" aria-labelledby="densityLabel">
+          <h3 class="customization-label" id="densityLabel">Espaciado</h3>
+          <div class="density-options" role="group" aria-label="Densidad de la interfaz">
+            <button class="density-choice" type="button" data-density="comfortable" aria-pressed="true">Cómodo</button>
+            <button class="density-choice" type="button" data-density="compact" aria-pressed="false">Compacto</button>
+          </div>
+        </section>
+        <section class="customization-group motion-setting" aria-labelledby="motionLabel">
+          <h3 class="customization-label" id="motionLabel">Reducir movimiento</h3>
+          <button class="motion-switch" id="motionSwitch" type="button" role="switch" aria-checked="false" aria-label="Reducir movimiento"><span></span></button>
+        </section>
+      </div>
+    </section>
+  </div>
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
   <!-- ==================== AUTHENTICATION MODAL ==================== -->
@@ -1110,6 +1173,25 @@
       const REFLECTION_KEY = "marea_planner_reflection_v1";
       const TOKEN_KEY = "snapduty_auth_token_v1";
       const USER_KEY = "snapduty_auth_user_v1";
+      const INTERFACE_KEY = "snapduty_interface_preferences_v1";
+      const INTERFACE_PALETTES = {
+        rose: {
+          light: { accent: "#c27a91", strong: "#a95f78", light: "#e7c7d1", wash: "#fbf0f3", hero: "#70515d", heroSurface: "#80616d", heroAccent: "#f0d7df", heroMuted: "#e7d9de" },
+          dark: { accent: "#899bb7", strong: "#a9b8ce", light: "#566984", wash: "#28364a", hero: "#202c3c", heroSurface: "#2b394c", heroAccent: "#c2cede", heroMuted: "#c0cad8" }
+        },
+        sage: {
+          light: { accent: "#779681", strong: "#5b7d65", light: "#cadbce", wash: "#eff5f0", hero: "#4b6654", heroSurface: "#597560", heroAccent: "#c9dfcc", heroMuted: "#dbe8dd" },
+          dark: { accent: "#94aaa0", strong: "#b5c5bd", light: "#50665d", wash: "#303e39", hero: "#202c3c", heroSurface: "#2b394c", heroAccent: "#c5d0dc", heroMuted: "#c0cad8" }
+        },
+        ocean: {
+          light: { accent: "#7189a8", strong: "#566f90", light: "#c8d5e5", wash: "#f0f4f9", hero: "#405a78", heroSurface: "#506b8b", heroAccent: "#c5d5e7", heroMuted: "#d7e1ed" },
+          dark: { accent: "#8ca3c4", strong: "#afc0d8", light: "#536d91", wash: "#303f55", hero: "#202c3c", heroSurface: "#2b394c", heroAccent: "#c2cede", heroMuted: "#c0cad8" }
+        },
+        plum: {
+          light: { accent: "#927993", strong: "#755c7f", light: "#d9c9dc", wash: "#f5eff7", hero: "#655568", heroSurface: "#76657a", heroAccent: "#e3d4e6", heroMuted: "#e2d9e5" },
+          dark: { accent: "#a99bb6", strong: "#c2b5ce", light: "#655873", wash: "#3a3445", hero: "#202c3c", heroSurface: "#2b394c", heroAccent: "#c8c0d4", heroMuted: "#c0cad8" }
+        }
+      };
       let currentUser = null;
       let DAILY_HOURS_GOAL = 4;
       let WEEKLY_HOURS_GOAL = 20;
@@ -1136,6 +1218,7 @@
       let timerInterval = null;
       const API_BASE = window.location.origin.startsWith("http") ? "" : "http://localhost:3000";
       let isMongoConnected = false;
+      let interfacePreferences = loadInterfacePreferences();
 
       function getAuthToken() {
         return localStorage.getItem(TOKEN_KEY) || "";
@@ -1155,6 +1238,8 @@
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         currentUser = user;
         updateUserUI(user);
+        interfacePreferences = loadInterfacePreferences();
+        applyInterfacePreferences();
       }
 
       function clearAuthSession() {
@@ -1166,6 +1251,8 @@
         localStorage.removeItem(TASKS_KEY);
         localStorage.removeItem(SERVICE_TIMERS_KEY);
         updateUserUI(null);
+        interfacePreferences = loadInterfacePreferences();
+        applyInterfacePreferences();
         renderAll();
         openAuthModal("Has cerrado sesión. Ingresa con tu cuenta para continuar.");
       }
@@ -1286,6 +1373,74 @@
           console.error("No se pudo leer el cronómetro de servicio:", error);
           setTimeout(() => showToast("No se pudo recuperar el cronómetro guardado.", "error"), 0);
           return {};
+        }
+      }
+
+      function interfaceStorageKey() {
+        const user = currentUser || getCurrentUser();
+        const userId = user?.id || user?._id;
+        return `${INTERFACE_KEY}:${userId || "guest"}`;
+      }
+
+      function normalizeInterfacePreferences(value) {
+        const preferences = value && typeof value === "object" ? value : {};
+        return {
+          palette: Object.hasOwn(INTERFACE_PALETTES, preferences.palette) ? preferences.palette : "rose",
+          density: preferences.density === "compact" ? "compact" : "comfortable",
+          reduceMotion: preferences.reduceMotion === true
+        };
+      }
+
+      function loadInterfacePreferences() {
+        try {
+          const raw = localStorage.getItem(interfaceStorageKey());
+          return normalizeInterfacePreferences(raw ? JSON.parse(raw) : null);
+        } catch (error) {
+          console.warn("No se pudieron leer las preferencias de interfaz:", error);
+          return normalizeInterfacePreferences(null);
+        }
+      }
+
+      function applyInterfacePreferences() {
+        const root = document.documentElement;
+        const palette = INTERFACE_PALETTES[interfacePreferences.palette] || INTERFACE_PALETTES.rose;
+        const colors = root.classList.contains("dark") ? palette.dark : palette.light;
+        const properties = {
+          "--accent": colors.accent,
+          "--accent-strong": colors.strong,
+          "--accent-light": colors.light,
+          "--accent-wash": colors.wash,
+          "--hero": colors.hero,
+          "--hero-surface": colors.heroSurface,
+          "--hero-accent": colors.heroAccent,
+          "--hero-muted": colors.heroMuted,
+          "--focus-text": colors.heroMuted,
+          "--focus-progress": colors.light
+        };
+        Object.entries(properties).forEach(([name, value]) => root.style.setProperty(name, value));
+        root.classList.toggle("compact", interfacePreferences.density === "compact");
+        root.classList.toggle("reduce-motion", interfacePreferences.reduceMotion);
+        document.querySelectorAll("[data-palette]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette));
+        });
+        document.querySelectorAll("[data-density]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.density === interfacePreferences.density));
+        });
+        $("motionSwitch")?.setAttribute("aria-checked", String(interfacePreferences.reduceMotion));
+      }
+
+      function saveInterfacePreferences() {
+        try {
+          localStorage.setItem(interfaceStorageKey(), JSON.stringify(interfacePreferences));
+        } catch (error) {
+          console.error("No se pudieron guardar las preferencias de interfaz:", error);
+          showToast("No se pudieron guardar tus preferencias en este navegador.", "error");
+        }
+        if (isMongoConnected) {
+          apiFetch("/api/settings/interface", {
+            method: "PUT",
+            body: JSON.stringify({ value: interfacePreferences })
+          }).catch((error) => console.warn("No se pudieron sincronizar las preferencias de interfaz:", error));
         }
       }
 
@@ -1915,6 +2070,18 @@
         $("activityId").value = "";
       }
 
+      function openCustomizationModal() {
+        applyInterfacePreferences();
+        $("customizationBackdrop").classList.add("open");
+        $("closeCustomization").focus();
+      }
+
+      function closeCustomizationModal() {
+        if (!$ ("customizationBackdrop").classList.contains("open")) return;
+        $("customizationBackdrop").classList.remove("open");
+        $("customizeButton").focus();
+      }
+
       function submitActivity(event) {
         event.preventDefault();
         const id = $("activityId").value;
@@ -2059,6 +2226,23 @@
 
       document.querySelectorAll(".nav-link").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
       document.querySelectorAll("[data-go-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.goView)));
+      $("customizeButton").addEventListener("click", openCustomizationModal);
+      $("closeCustomization").addEventListener("click", closeCustomizationModal);
+      $("customizationBackdrop").addEventListener("click", (event) => {
+        if (event.target === $("customizationBackdrop")) {
+          closeCustomizationModal();
+          return;
+        }
+        const paletteChoice = event.target.closest("[data-palette]");
+        const densityChoice = event.target.closest("[data-density]");
+        if (paletteChoice) interfacePreferences.palette = paletteChoice.dataset.palette;
+        if (densityChoice) interfacePreferences.density = densityChoice.dataset.density;
+        if (event.target.closest("#motionSwitch")) interfacePreferences.reduceMotion = !interfacePreferences.reduceMotion;
+        if (paletteChoice || densityChoice || event.target.closest("#motionSwitch")) {
+          applyInterfacePreferences();
+          saveInterfacePreferences();
+        }
+      });
       $("newActivityButton").addEventListener("click", () => openModal());
       $("addForDay").addEventListener("click", () => openModal(null, selectedDate));
       $("addCalendarDay").addEventListener("click", () => openModal(null, selectedDate));
@@ -2074,7 +2258,10 @@
         deleteTask(id);
       });
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") closeModal();
+        if (event.key === "Escape") {
+          closeModal();
+          closeCustomizationModal();
+        }
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
           event.preventDefault();
           openModal();
@@ -2125,6 +2312,7 @@
       $("themeToggle").addEventListener("click", () => {
         const dark = document.documentElement.classList.toggle("dark");
         const themeVal = dark ? "dark" : "light";
+        applyInterfacePreferences();
         document.querySelector('meta[name="theme-color"]').content = dark ? "#151c28" : "#f7f8f6";
         try {
           localStorage.setItem(THEME_KEY, themeVal);
@@ -2313,6 +2501,7 @@
         $("themeToggle").innerHTML = '<i class="fa-regular fa-sun"></i>';
         $("themeToggle").setAttribute("aria-label", "Activar tema claro");
       }
+      applyInterfacePreferences();
       renderAll();
 
       async function initMongoSync() {
@@ -2362,6 +2551,10 @@
             $("themeToggle").setAttribute("aria-label", isDark ? "Activar tema claro" : "Activar tema oscuro");
             localStorage.setItem(THEME_KEY, data.theme);
           }
+
+          interfacePreferences = normalizeInterfacePreferences(data.interfacePreferences || loadInterfacePreferences());
+          localStorage.setItem(interfaceStorageKey(), JSON.stringify(interfacePreferences));
+          applyInterfacePreferences();
 
           renderAll();
 
