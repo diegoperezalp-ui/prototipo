@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">SnapDuty, árbol de servicio social</title>
+  <rect width="64" height="64" rx="14" fill="#1f6a56"/>
+  <path d="M32 51V30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M32 39c-5-5-10-7-15-7M32 35c5-6 10-8 15-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="14" r="8" fill="#fff"/>
+  <circle cx="22" cy="20" r="8" fill="#fff"/>
+  <circle cx="42" cy="20" r="8" fill="#fff"/>
+  <circle cx="27" cy="29" r="8" fill="#d9eadf"/>
+  <circle cx="37" cy="29" r="8" fill="#d9eadf"/>
+  <path d="M22 53h20" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>
