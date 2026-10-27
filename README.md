@@ -1,6 +1,6 @@
 # SnapDuty · Planificador de Servicio Social con Base de Datos MongoDB y Autenticación
 
-SnapDuty es una plataforma integral para planear y registrar actividades de servicio social con propósito. Su lema es: **Cada hora de servicio, un cambio que cuenta.**
+SnapDuty es una plataforma integral para planear y registrar actividades de servicio social con propósito. Su lema es: **El deber de dejar huella.**
 
 Cuenta con un sistema de **autenticación y sesiones independientes en MongoDB** con cifrado `bcrypt` y tokens `JWT`, garantizando que cada estudiante tenga su propia agenda, cronómetro, reflexiones y estadísticas completamente aisladas y seguras.
 
@@ -8,7 +8,7 @@ Cuenta con un sistema de **autenticación y sesiones independientes en MongoDB**
 
 ## 🔐 Autenticación y Cuentas de Prueba
 
-La aplicación incluye una interfaz visual moderna con glassmorphism para **Iniciar Sesión** y **Crear Cuenta**.
+La aplicación ofrece una interfaz de **Iniciar Sesión** y **Crear Cuenta**, con identidad visual de árbol y temas claro y oscuro.
 
 ### Credenciales de prueba listas para usar:
 | Usuario | Correo Electrónico | Contraseña | Perfil y Enfoque |
@@ -26,11 +26,11 @@ Cada registro en MongoDB está estrictamente vinculado al `userId` del estudiant
 
 | Función de la Aplicación | Colección / Modelo | Aislamiento por Sesión en MongoDB |
 | :--- | :--- | :--- |
-| **Usuarios y Perfil** | [`User`](file:///models/User.js) | Nombre, correo único, contraseña encriptada con bcrypt, institución, metas personales. |
-| **Agenda y Calendario** | [`Activity`](file:///models/Activity.js) | CRUD de actividades asociadas al usuario con índice compuesto `{ userId: 1, id: 1 }`. |
-| **Cronómetro y Medidor Diario** | [`ServiceTimer`](file:///models/ServiceTimer.js) | Jornada diaria (4h/día), salida estimada y horas acumuladas con índice `{ userId: 1, date: 1 }`. |
-| **Bitácora y Reflexiones** | [`Reflection`](file:///models/Reflection.js) | Diario de aprendizajes y horas registradas por el usuario. |
-| **Preferencias de Usuario** | [`Setting`](file:///models/Setting.js) | Tema visual (claro / oscuro) y reflexiones rápidas con índice `{ userId: 1, key: 1 }`. |
+| **Usuarios y Perfil** | [`User`](models/User.js) | Nombre, correo único, contraseña encriptada con bcrypt, institución, metas personales. |
+| **Agenda y Calendario** | [`Activity`](models/Activity.js) | CRUD de actividades asociadas al usuario con índice compuesto `{ userId: 1, id: 1 }`. |
+| **Cronómetro y Medidor Diario** | [`ServiceTimer`](models/ServiceTimer.js) | Meta normal de 4 horas, cierre y registro automáticos; permite fijar una excepción de 1 a 12 horas. Conserva la meta por jornada y usa el índice `{ userId: 1, date: 1 }`. |
+| **Bitácora y Reflexiones** | [`Reflection`](models/Reflection.js) | Diario de aprendizajes y horas registradas por el usuario. |
+| **Preferencias de Usuario** | [`Setting`](models/Setting.js) | Tema visual (claro / oscuro) y reflexiones rápidas con índice `{ userId: 1, key: 1 }`. |
 
 ---
 
