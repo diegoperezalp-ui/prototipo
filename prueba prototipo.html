@@ -1104,6 +1104,162 @@
       .activity-item { grid-template-columns: 46px minmax(0,1fr) auto; gap: 10px; }
       .auth-card { padding: 30px 22px 24px; }
     }
+
+    .primary-button, .secondary-button, .auth-submit-btn {
+      position: relative;
+      isolation: isolate;
+      z-index: 0;
+      overflow: visible;
+      border: 0;
+      border-radius: 80px;
+      background: transparent;
+      color: var(--hero-text);
+      box-shadow: none;
+      transition: transform .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    .primary-button::before, .primary-button::after,
+    .secondary-button::before, .secondary-button::after,
+    .auth-submit-btn::before, .auth-submit-btn::after {
+      position: absolute;
+      border-radius: inherit;
+      content: "";
+      pointer-events: none;
+    }
+    .primary-button::before, .secondary-button::before, .auth-submit-btn::before {
+      inset: 0;
+      z-index: -2;
+      background: linear-gradient(92.83deg, var(--accent), var(--accent-strong));
+    }
+    .primary-button::after, .secondary-button::after, .auth-submit-btn::after {
+      inset: 4px;
+      z-index: -1;
+      background: linear-gradient(135deg, var(--hero), color-mix(in srgb, var(--hero) 72%, var(--accent)));
+      transition: inset .1s ease-out, opacity .1s ease-out;
+    }
+    .primary-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) {
+      color: var(--on-accent);
+      background: transparent;
+      box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-strong) 28%, transparent);
+    }
+    .primary-button:hover:not(:disabled)::after, .secondary-button:hover:not(:disabled)::after, .auth-submit-btn:hover:not(:disabled)::after {
+      inset: 0;
+      opacity: 0;
+      transition-timing-function: ease-in;
+    }
+    .primary-button:active:not(:disabled), .secondary-button:active:not(:disabled), .auth-submit-btn:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+    .primary-button:active:not(:disabled)::before, .secondary-button:active:not(:disabled)::before, .auth-submit-btn:active:not(:disabled)::before {
+      background: linear-gradient(0deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)), linear-gradient(92.83deg, var(--accent), var(--accent-strong));
+    }
+    .primary-button:active:not(:disabled)::after, .secondary-button:active:not(:disabled)::after, .auth-submit-btn:active:not(:disabled)::after {
+      inset: 4px;
+      opacity: 1;
+      background: linear-gradient(135deg, var(--hero), color-mix(in srgb, var(--hero) 72%, var(--accent)));
+    }
+    .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: default; opacity: .24; }
+
+    .primary-button, .secondary-button, .auth-submit-btn {
+      min-height: 44px;
+      padding: 0 18px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      gap: 9px;
+    }
+    .auth-submit-btn { width: 100%; min-height: 48px; }
+
+    .form-field input:not([type="radio"]), .form-field select, .form-field textarea,
+    .service-time-field input, .search-field, .filter-select, .reflection-card textarea {
+      min-height: 46px;
+      padding: 10px 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .form-field textarea, .reflection-card textarea { min-height: 120px; }
+    .service-time-field input { width: 100%; height: 46px; padding: 0 13px; }
+    .service-target-field { max-width: none; min-width: 0; }
+    .service-target-field input { width: 100%; }
+    .auth-input { min-height: 48px; height: 48px; padding: 0 14px 0 40px; font-size: 14px; }
+
+    .service-card {
+      margin: 20px 0 12px;
+      padding: clamp(18px, 2.4vw, 26px);
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+      border-radius: 20px;
+      background: linear-gradient(145deg, var(--accent-wash), var(--surface));
+      box-shadow: var(--sh-1);
+    }
+    .service-header { align-items: center; gap: 14px; }
+    .service-heading { min-width: 0; gap: 12px; }
+    .service-icon { width: 46px; height: 46px; flex-basis: 46px; border-radius: 15px; background: var(--accent-wash); color: var(--accent-strong); font-size: 17px; }
+    .service-heading h3 { font-size: 15px; }
+    .service-heading p { margin-top: 5px; font-size: 12px; line-height: 1.45; }
+    .service-badge { padding: 7px 12px; font-size: 11px; }
+    .service-meter-label { margin: 22px 0 10px; font-size: 12px; }
+    .service-meter-label strong { font-size: 14px; }
+    .service-segments { gap: 7px; }
+    .service-segment { height: 10px; border-radius: 999px; }
+    .service-hour-labels { margin-top: 7px; font-size: 11px; }
+    .service-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .service-time-field { min-width: 0; gap: 7px; }
+    .service-time-field label { font-size: 12px; line-height: 1.35; }
+    .service-estimate {
+      grid-column: 1 / -1;
+      width: 100%;
+      margin: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .service-estimate strong { display: block; margin-top: 3px; color: var(--accent-strong); font-size: 17px; }
+    .service-start { grid-column: 1 / -1; width: 100%; min-height: 48px; padding: 0 18px; font-size: 13px; }
+    .service-notice { margin-top: 13px; font-size: 12px; line-height: 1.6; }
+    .service-disabled { margin-top: 18px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; font-size: 13px; line-height: 1.6; }
+
+    .service-active-row { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: start; gap: 20px; margin-top: 22px; }
+    .timer-orb { width: 104px; height: 104px; flex-basis: 104px; box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent); }
+    .timer-orb::before { inset: 8px; }
+    .timer-orb span { font-size: 14px; }
+    .service-active-copy { min-width: 0; padding-top: 4px; }
+    .service-active-copy > strong { display: block; font-size: 15px; line-height: 1.4; }
+    .service-active-copy p { margin-top: 7px; font-size: 12px; line-height: 1.6; }
+    .service-active-copy p strong { display: inline; font-size: inherit; line-height: inherit; }
+    .service-timer-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .service-timer-actions .primary-button, .service-timer-actions .secondary-button { width: 100%; min-height: 44px; padding: 7px 12px; font-size: 11px; }
+    .service-target-edit { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; margin: 0; }
+    .service-target-edit .secondary-button { min-width: 112px; }
+    .service-timer-actions > #resetServiceButton { grid-column: 1 / -1; }
+
+    @media (max-width: 520px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .service-header { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+      .service-heading { width: 100%; }
+      .service-badge { justify-self: start; margin-left: 58px; }
+      .service-controls { grid-template-columns: 1fr; }
+      .service-estimate, .service-start { grid-column: 1; }
+      .service-time-field label { overflow-wrap: anywhere; }
+      .service-active-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .timer-orb { width: 78px; height: 78px; flex-basis: 78px; }
+      .timer-orb::before { inset: 6px; }
+      .timer-orb span { font-size: 11px; }
+      .timer-orb { justify-self: center; }
+      .service-active-copy { width: 100%; }
+      .service-timer-actions { grid-template-columns: 1fr; }
+      .service-target-edit { grid-template-columns: minmax(0, 1fr) auto; }
+      .service-target-edit .secondary-button { min-width: 0; padding: 0 12px; }
+    }
   </style>
 </head>
 <body>
