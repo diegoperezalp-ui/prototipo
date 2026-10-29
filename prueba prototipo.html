@@ -15,6 +15,8 @@
     :root {
       color-scheme: light;
       --page: #f7f8f6;
+      --page-art: url("/fondo%20claro.PNG");
+      --page-art-overlay: rgba(247, 248, 246, .38);
       --surface: #fff;
       --surface-soft: #f1f3f4;
       --surface-strong: #e2e6e8;
@@ -49,6 +51,8 @@
     .dark {
       color-scheme: dark;
       --page: #151c28;
+      --page-art: url("/fondo%20oscuro.jpg");
+      --page-art-overlay: rgba(21, 28, 40, .38);
       --surface: #1d2634;
       --surface-soft: #232e3e;
       --surface-strong: #303d50;
@@ -801,8 +805,13 @@
     body {
       font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
       background:
+        linear-gradient(var(--page-art-overlay), var(--page-art-overlay)),
         radial-gradient(900px 420px at 85% -80px, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
-        var(--page);
+        var(--page-art);
+      background-color: var(--page);
+      background-size: cover, 900px 420px, cover;
+      background-position: center, 85% -80px, center;
+      background-repeat: no-repeat;
       background-attachment: fixed;
     }
     .app-shell { grid-template-columns: 264px minmax(0, 1fr); }
