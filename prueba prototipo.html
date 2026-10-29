@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8f6">
   <meta name="description" content="SnapDuty: organiza tu servicio social semana a semana. Cada hora de servicio, un cambio que cuenta.">
   <title>SnapDuty · Servicio social con propósito</title>
-  <link rel="icon" type="image/svg+xml" href="/snapduty-tree.svg">
+  <link rel="icon" type="image/png" href="logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -123,7 +123,7 @@
       box-shadow: none;
       font-size: 18px;
     }
-    .gemini-brand-image { width: 42px; height: 42px; display: block; object-fit: contain; }
+    .gemini-brand-image { width: 42px; height: 42px; display: block; object-fit: contain; filter: brightness(0) invert(1); }
     .brand-name { font-family: "DM Serif Display", Georgia, serif; font-size: 23px; line-height: 1; letter-spacing: -.03em; }
     .brand-note { color: var(--text-soft); font-size: 10px; margin-top: 5px; letter-spacing: .04em; }
     .nav-label { color: var(--text-soft); padding: 0 12px; margin: 0 0 9px; font-size: 9px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
@@ -810,7 +810,8 @@
     /* Barra lateral */
     .sidebar { padding: 26px 18px 20px; background: var(--surface); box-shadow: 1px 0 0 var(--line), 6px 0 24px rgba(30,25,35,.03); backdrop-filter: none; }
     .brand { padding: 0 6px 30px; }
-    .brand-mark { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(145deg, var(--accent), var(--accent-strong)); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-strong) 35%, transparent); }
+    .brand-mark { width: 46px; height: 46px; overflow: hidden; border-radius: 14px; background: linear-gradient(145deg, var(--accent), var(--accent-strong)); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-strong) 35%, transparent); }
+    .brand-mark .gemini-brand-image { width: 100%; height: 100%; object-fit: contain; }
     .brand-name { font-size: 25px; }
     .brand-note { font-size: 9px; letter-spacing: .1em; color: var(--text-soft); }
     .nav-label { font-size: 11px; letter-spacing: .14em; padding: 0 12px; margin-bottom: 10px; }
@@ -1264,34 +1265,27 @@
 
     .primary-button, .secondary-button, .auth-submit-btn {
       position: relative;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--surface);
+      border: 2px solid transparent;
+      border-radius: 7px;
       color: var(--text);
-      box-shadow: none;
-      transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease, filter .16s ease;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, .25);
+      box-shadow: 8px 8px 20px color-mix(in srgb, var(--accent-strong) 34%, transparent);
+      transition: box-shadow .3s ease, opacity .3s ease;
     }
     .primary-button, .auth-submit-btn {
-      border-color: var(--accent-strong);
-      background: var(--accent-strong);
+      background: linear-gradient(140.14deg, color-mix(in srgb, var(--accent) 78%, white), var(--accent-strong)) padding-box,
+        linear-gradient(142.51deg, color-mix(in srgb, var(--accent) 58%, white), color-mix(in srgb, var(--accent-strong) 82%, black)) border-box;
       color: var(--on-accent);
     }
-    .secondary-button { color: var(--accent-strong); }
+    .secondary-button {
+      background: linear-gradient(140.14deg, var(--surface), var(--surface-soft)) padding-box,
+        linear-gradient(142.51deg, color-mix(in srgb, var(--accent) 42%, white), var(--accent-strong)) border-box;
+      color: var(--accent-strong);
+    }
     .primary-button::before, .primary-button::after,
     .secondary-button::before, .secondary-button::after,
     .auth-submit-btn::before, .auth-submit-btn::after { display: none; }
-    .primary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      filter: brightness(.96);
-      box-shadow: none;
-    }
-    .secondary-button:hover:not(:disabled), .icon-button:hover:not(:disabled), .text-button:hover:not(:disabled) {
-      transform: translateY(-1px);
-      border-color: var(--accent-light);
-      background: var(--accent-wash);
-      color: var(--accent-strong);
-      box-shadow: none;
-    }
+    .primary-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) { box-shadow: none; opacity: .8; }
     .icon-button { box-shadow: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease; }
     .dark .primary-button, .dark .auth-submit-btn { color: var(--on-accent); }
     .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: not-allowed; opacity: .55; }
@@ -1324,7 +1318,7 @@
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegación principal">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true"><img class="gemini-brand-image" src="/snapduty-tree.svg" alt=""></div>
+        <div class="brand-mark" aria-hidden="true"><img class="gemini-brand-image" src="/logo.png" alt=""></div>
         <div><div class="brand-name">SnapDuty</div><div class="brand-note">SERVICIO SOCIAL CON PROPÓSITO</div></div>
       </div>
       <p class="nav-label">Tu espacio</p>
@@ -1569,15 +1563,19 @@
       </div>
       <div class="customization-groups">
         <section class="customization-group" aria-labelledby="colorSettingsLabel">
-          <h3 class="customization-label" id="colorSettingsLabel">Colores</h3>
+          <h3 class="customization-label" id="colorSettingsLabel">Tema de color</h3>
           <div class="color-picker-grid">
             <div class="color-picker-card">
-              <span class="color-picker-wheel" id="primaryColorWheel" role="slider" tabindex="0" aria-label="Rueda de color primario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
-              <span class="color-picker-copy"><span class="color-picker-name">Primario</span><output class="color-picker-hex" id="primaryColorValue">#C27A91</output><label class="color-picker-lightness-label" for="primaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="primaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color primario"></span>
+              <span class="color-picker-wheel" id="primaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el fondo primario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
+              <span class="color-picker-copy"><span class="color-picker-name">Fondo primario</span><output class="color-picker-hex" id="primaryColorValue">#F7F8F6</output><label class="color-picker-lightness-label" for="primaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="primaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del fondo primario"></span>
             </div>
             <div class="color-picker-card">
-              <span class="color-picker-wheel" id="secondaryColorWheel" role="slider" tabindex="0" aria-label="Rueda de color secundario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
-              <span class="color-picker-copy"><span class="color-picker-name">Secundario</span><output class="color-picker-hex" id="secondaryColorValue">#70515D</output><label class="color-picker-lightness-label" for="secondaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="secondaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color secundario"></span>
+              <span class="color-picker-wheel" id="secondaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el fondo secundario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
+              <span class="color-picker-copy"><span class="color-picker-name">Fondo secundario</span><output class="color-picker-hex" id="secondaryColorValue">#FFFFFF</output><label class="color-picker-lightness-label" for="secondaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="secondaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del fondo secundario"></span>
+            </div>
+            <div class="color-picker-card">
+              <span class="color-picker-wheel" id="tertiaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el color terciario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
+              <span class="color-picker-copy"><span class="color-picker-name">Color terciario</span><output class="color-picker-hex" id="tertiaryColorValue">#C27A91</output><label class="color-picker-lightness-label" for="tertiaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="tertiaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color terciario"></span>
             </div>
           </div>
         </section>
@@ -1611,7 +1609,7 @@
     <div class="auth-card">
       <div class="auth-header">
         <div class="auth-logo-badge">
-          <img class="gemini-brand-image" src="/snapduty-tree.svg" alt="">
+          <img class="gemini-brand-image" src="/logo.png" alt="">
         </div>
         <h2 class="auth-title" id="authTitle">SnapDuty</h2>
         <p class="auth-subtitle">Servicio Social con Propósito · Tu sesión en MongoDB</p>
@@ -1930,10 +1928,12 @@
       function normalizeInterfacePreferences(value) {
         const preferences = value && typeof value === "object" ? value : {};
         const normalizeColor = (color) => typeof color === "string" && /^#[\da-f]{6}$/i.test(color) ? color.toUpperCase() : null;
+        const hasThreeColorTheme = Object.hasOwn(preferences, "customTertiary");
         return {
           palette: Object.hasOwn(INTERFACE_PALETTES, preferences.palette) ? preferences.palette : "rose",
-          customPrimary: normalizeColor(preferences.customPrimary),
-          customSecondary: normalizeColor(preferences.customSecondary),
+          customPrimary: hasThreeColorTheme ? normalizeColor(preferences.customPrimary) : null,
+          customSecondary: hasThreeColorTheme ? normalizeColor(preferences.customSecondary) : null,
+          customTertiary: normalizeColor(hasThreeColorTheme ? preferences.customTertiary : preferences.customPrimary),
           density: preferences.density === "compact" ? "compact" : "comfortable",
           reduceMotion: preferences.reduceMotion === true
         };
@@ -1989,40 +1989,63 @@
       function applyInterfacePreferences() {
         const root = document.documentElement;
         const palette = INTERFACE_PALETTES[interfacePreferences.palette] || INTERFACE_PALETTES.rose;
-        const colors = root.classList.contains("dark") ? palette.dark : palette.light;
-        const primaryColor = interfacePreferences.customPrimary || colors.accent;
-        const primaryStrong = interfacePreferences.customPrimary || colors.strong;
-        const secondaryColor = interfacePreferences.customSecondary || colors.hero;
-        const heroText = contrastTextColor(secondaryColor);
-        const accentLight = interfacePreferences.customPrimary
-          ? `color-mix(in srgb, ${primaryColor} 28%, var(--surface-strong))`
+        const isDark = root.classList.contains("dark");
+        const colors = isDark ? palette.dark : palette.light;
+        const surfaces = isDark
+          ? { page: "#151c28", surface: "#1d2634", soft: "#232e3e", strong: "#303d50", line: "#354256" }
+          : { page: "#f7f8f6", surface: "#ffffff", soft: "#f1f6f1", strong: "#e4eee6", line: "#dfe6e0" };
+        const primaryColor = interfacePreferences.customPrimary || surfaces.page;
+        const secondaryColor = interfacePreferences.customSecondary || surfaces.surface;
+        const tertiaryColor = interfacePreferences.customTertiary || colors.accent;
+        const tertiaryStrong = interfacePreferences.customTertiary || colors.strong;
+        const interfaceText = contrastTextColor(secondaryColor);
+        const heroText = contrastTextColor(tertiaryColor);
+        const accentLight = interfacePreferences.customTertiary
+          ? `color-mix(in srgb, ${tertiaryColor} 28%, ${surfaces.strong})`
           : colors.light;
-        const accentWash = interfacePreferences.customPrimary
-          ? `color-mix(in srgb, ${primaryColor} 12%, var(--surface))`
+        const accentWash = interfacePreferences.customTertiary
+          ? `color-mix(in srgb, ${tertiaryColor} 12%, ${secondaryColor})`
           : colors.wash;
+        const softSurface = interfacePreferences.customPrimary || interfacePreferences.customSecondary
+          ? `color-mix(in srgb, ${secondaryColor} 90%, ${primaryColor})`
+          : surfaces.soft;
+        const strongSurface = interfacePreferences.customPrimary || interfacePreferences.customSecondary
+          ? `color-mix(in srgb, ${secondaryColor} 74%, ${interfaceText})`
+          : surfaces.strong;
+        const lineColor = interfacePreferences.customPrimary || interfacePreferences.customSecondary
+          ? `color-mix(in srgb, ${secondaryColor} 78%, ${interfaceText})`
+          : surfaces.line;
         const properties = {
-          "--accent": primaryColor,
-          "--accent-strong": primaryStrong,
+          "--page": primaryColor,
+          "--surface": secondaryColor,
+          "--surface-soft": softSurface,
+          "--surface-strong": strongSurface,
+          "--line": lineColor,
+          "--text": interfaceText,
+          "--text-soft": `color-mix(in srgb, ${interfaceText} 62%, ${secondaryColor})`,
+          "--accent": tertiaryColor,
+          "--accent-strong": tertiaryStrong,
           "--accent-light": accentLight,
           "--accent-wash": accentWash,
-          "--on-accent": contrastTextColor(primaryStrong),
-          "--hero": secondaryColor,
-          "--hero-surface": interfacePreferences.customSecondary ? secondaryColor : colors.heroSurface,
+          "--on-accent": contrastTextColor(tertiaryStrong),
+          "--hero": tertiaryColor,
+          "--hero-surface": interfacePreferences.customTertiary ? `color-mix(in srgb, ${tertiaryColor} 84%, ${isDark ? "black" : "white"})` : colors.heroSurface,
           "--hero-text": heroText,
-          "--hero-accent": interfacePreferences.customSecondary ? heroText : colors.heroAccent,
-          "--hero-muted": interfacePreferences.customSecondary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
-          "--focus-text": interfacePreferences.customSecondary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
+          "--hero-accent": interfacePreferences.customTertiary ? heroText : colors.heroAccent,
+          "--hero-muted": interfacePreferences.customTertiary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
+          "--focus-text": interfacePreferences.customTertiary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
           "--focus-progress": accentLight
         };
         Object.entries(properties).forEach(([name, value]) => root.style.setProperty(name, value));
         root.classList.toggle("compact", interfacePreferences.density === "compact");
         root.classList.toggle("reduce-motion", interfacePreferences.reduceMotion);
         document.querySelectorAll("[data-palette]").forEach((button) => {
-          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette && !interfacePreferences.customPrimary && !interfacePreferences.customSecondary));
+          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette && !interfacePreferences.customPrimary && !interfacePreferences.customSecondary && !interfacePreferences.customTertiary));
         });
         [
           { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", valueId: "primaryColorValue", color: primaryColor },
-          { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", valueId: "secondaryColorValue", color: secondaryColor }
+          { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", valueId: "secondaryColorValue", color: secondaryColor },
+          { wheelId: "tertiaryColorWheel", lightnessId: "tertiaryColorLightness", valueId: "tertiaryColorValue", color: tertiaryColor }
         ].forEach(({ wheelId, lightnessId, valueId, color }) => {
           const wheel = $(wheelId);
           const hsl = hexToHsl(color);
@@ -2851,6 +2874,7 @@
           interfacePreferences.palette = paletteChoice.dataset.palette;
           interfacePreferences.customPrimary = null;
           interfacePreferences.customSecondary = null;
+          interfacePreferences.customTertiary = null;
         }
         if (densityChoice) interfacePreferences.density = densityChoice.dataset.density;
         if (event.target.closest("#motionSwitch")) interfacePreferences.reduceMotion = !interfacePreferences.reduceMotion;
@@ -2860,12 +2884,13 @@
         }
       });
       [
-        { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", preferenceKey: "customPrimary" },
-        { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", preferenceKey: "customSecondary" }
-      ].forEach(({ wheelId, lightnessId, preferenceKey }) => {
+        { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", preferenceKey: "customPrimary", property: "--page" },
+        { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", preferenceKey: "customSecondary", property: "--surface" },
+        { wheelId: "tertiaryColorWheel", lightnessId: "tertiaryColorLightness", preferenceKey: "customTertiary", property: "--accent" }
+      ].forEach(({ wheelId, lightnessId, preferenceKey, property }) => {
         const wheel = $(wheelId);
         const lightnessInput = $(lightnessId);
-        const currentColor = () => interfacePreferences[preferenceKey] || getComputedStyle(document.documentElement).getPropertyValue(preferenceKey === "customPrimary" ? "--accent" : "--hero").trim();
+        const currentColor = () => interfacePreferences[preferenceKey] || getComputedStyle(document.documentElement).getPropertyValue(property).trim();
         const setColor = (color) => {
           interfacePreferences[preferenceKey] = color;
           applyInterfacePreferences();
@@ -2877,7 +2902,7 @@
           const radius = Math.min(bounds.width, bounds.height) / 2 - 7;
           const saturation = Math.min(1, Math.hypot(deltaX, deltaY) / radius);
           const hue = (Math.atan2(deltaX, -deltaY) * 180 / Math.PI + 360) % 360;
-          setColor(hslToHex(hue, saturation, hexToHsl(currentColor()).lightness));
+          setColor(hslToHex(hue, saturation, Number(lightnessInput.value) / 100));
         };
         wheel.addEventListener("pointerdown", (event) => {
           wheel.setPointerCapture(event.pointerId);
