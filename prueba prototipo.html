@@ -1267,10 +1267,8 @@
       position: relative;
       border: 2px solid transparent;
       border-radius: 7px;
-      color: var(--text);
-      text-shadow: 1px 1px 1px rgba(0, 0, 0, .25);
-      box-shadow: 8px 8px 20px color-mix(in srgb, var(--accent-strong) 34%, transparent);
-      transition: box-shadow .3s ease, opacity .3s ease;
+      box-shadow: 0 7px 18px color-mix(in srgb, var(--accent-strong) 24%, transparent);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
     .primary-button, .auth-submit-btn {
       background: linear-gradient(140.14deg, color-mix(in srgb, var(--accent) 78%, white), var(--accent-strong)) padding-box,
@@ -1285,31 +1283,51 @@
     .primary-button::before, .primary-button::after,
     .secondary-button::before, .secondary-button::after,
     .auth-submit-btn::before, .auth-submit-btn::after { display: none; }
-    .primary-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) { box-shadow: none; opacity: .8; }
+    .primary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-strong) 34%, transparent);
+    }
+    .secondary-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+    .primary-button:active:not(:disabled), .secondary-button:active:not(:disabled), .auth-submit-btn:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px color-mix(in srgb, var(--accent-strong) 18%, transparent);
+    }
     .icon-button { box-shadow: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease; }
     .dark .primary-button, .dark .auth-submit-btn { color: var(--on-accent); }
     .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: not-allowed; opacity: .55; }
-    .color-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .color-picker-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .color-picker-card {
-      min-width: 0; min-height: 112px; padding: 13px; display: flex; align-items: center; gap: 12px;
-      border: 1px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer;
-      transition: border-color .16s ease, background-color .16s ease;
+      min-width: 0; min-height: 112px; padding: 16px; display: flex; align-items: center; gap: 16px;
+      border: 1px solid transparent; border-radius: 16px;
+      background: linear-gradient(125deg, color-mix(in srgb, var(--accent-wash) 72%, var(--surface)), var(--surface) 78%) padding-box,
+        linear-gradient(120deg, color-mix(in srgb, var(--accent) 36%, var(--line)), var(--line), color-mix(in srgb, var(--hero) 26%, var(--line))) border-box;
+      box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 8%, transparent);
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
     }
-    .color-picker-card:hover { border-color: var(--accent-light); background: var(--surface-soft); }
+    .color-picker-card:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(125deg, color-mix(in srgb, var(--accent-wash) 88%, var(--surface)), var(--surface) 78%) padding-box,
+        linear-gradient(120deg, color-mix(in srgb, var(--accent) 48%, var(--line)), var(--line), color-mix(in srgb, var(--hero) 34%, var(--line))) border-box;
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 13%, transparent);
+    }
     .color-picker-wheel {
-      width: 78px; height: 78px; position: relative; flex: 0 0 78px; overflow: hidden; border: 1px solid var(--line); border-radius: 50%;
+      width: 82px; height: 82px; position: relative; flex: 0 0 82px; overflow: hidden; border: 3px solid var(--surface); border-radius: 50%;
       background: radial-gradient(circle, #fff 0%, transparent 76%), conic-gradient(#ff3b30, #ffcc00, #34c759, #00c7be, #007aff, #af52de, #ff2d55, #ff3b30);
+      box-shadow: 0 0 0 1px var(--line), 0 0 0 5px var(--accent-wash), 0 7px 16px color-mix(in srgb, var(--accent) 20%, transparent);
       cursor: crosshair; touch-action: none;
     }
     .color-picker-wheel:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 42%, transparent); outline-offset: 3px; }
     .color-wheel-marker {
       width: 14px; height: 14px; position: absolute; top: var(--marker-y, 50%); left: var(--marker-x, 50%); transform: translate(-50%, -50%);
-      border: 2px solid #fff; border-radius: 50%; background: var(--picker-color, var(--accent)); box-shadow: 0 0 0 1px #25312a, 0 1px 4px rgba(0,0,0,.3); pointer-events: none;
+      border: 2px solid #fff; border-radius: 50%; background: var(--picker-color, var(--accent)); box-shadow: 0 0 0 1px #25312a, 0 2px 6px rgba(0,0,0,.36); pointer-events: none;
     }
-    .color-picker-copy { min-width: 0; flex: 1; display: grid; gap: 5px; }
-    .color-picker-name { color: var(--text); font-size: 12px; font-weight: 800; }
-    .color-picker-hex { color: var(--text-soft); font-size: 11px; font-variant-numeric: tabular-nums; text-transform: uppercase; }
-    .color-picker-lightness-label { margin-top: 3px; color: var(--text-soft); font-size: 9px; }
+    .color-picker-copy { min-width: 0; flex: 1; display: grid; gap: 6px; }
+    .color-picker-name { color: var(--text); font-size: 13px; font-weight: 800; }
+    .color-picker-hex { width: max-content; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); color: var(--accent-strong); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; text-transform: uppercase; }
+    .color-picker-lightness-label { margin-top: 2px; color: var(--text-soft); font-size: 9px; }
     .color-picker-lightness { width: 100%; height: 16px; margin: 0; accent-color: var(--accent-strong); cursor: pointer; }
     @media (max-width: 520px) { .color-picker-grid { grid-template-columns: 1fr; } }
   </style>
