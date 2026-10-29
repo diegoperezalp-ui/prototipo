@@ -16,11 +16,11 @@
       color-scheme: light;
       --page: #f7f8f6;
       --surface: #fff;
-      --surface-soft: #f1f6f1;
-      --surface-strong: #e4eee6;
+      --surface-soft: #f1f3f4;
+      --surface-strong: #e2e6e8;
       --text: #29342f;
       --text-soft: #707a74;
-      --line: #dfe6e0;
+      --line: #d9dfe2;
       --accent: #c27a91;
       --accent-strong: #a95f78;
       --accent-light: #e7c7d1;
@@ -1265,19 +1265,19 @@
 
     .primary-button, .secondary-button, .auth-submit-btn {
       position: relative;
-      border: 2px solid transparent;
-      border-radius: 7px;
-      box-shadow: 0 7px 18px color-mix(in srgb, var(--accent-strong) 24%, transparent);
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(31, 41, 35, .08), 0 7px 16px color-mix(in srgb, var(--accent) 10%, transparent);
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
     }
     .primary-button, .auth-submit-btn {
-      background: linear-gradient(140.14deg, color-mix(in srgb, var(--accent) 78%, white), var(--accent-strong)) padding-box,
-        linear-gradient(142.51deg, color-mix(in srgb, var(--accent) 58%, white), color-mix(in srgb, var(--accent-strong) 82%, black)) border-box;
+      border-color: var(--accent-strong);
+      background: var(--accent-strong);
       color: var(--on-accent);
     }
     .secondary-button {
-      background: linear-gradient(140.14deg, var(--surface), var(--surface-soft)) padding-box,
-        linear-gradient(142.51deg, color-mix(in srgb, var(--accent) 42%, white), var(--accent-strong)) border-box;
+      background: var(--surface);
       color: var(--accent-strong);
     }
     .primary-button::before, .primary-button::after,
@@ -1285,17 +1285,38 @@
     .auth-submit-btn::before, .auth-submit-btn::after { display: none; }
     .primary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-strong) 34%, transparent);
+      background: color-mix(in srgb, var(--accent-strong) 88%, black);
+      border-color: color-mix(in srgb, var(--accent-strong) 88%, black);
+      box-shadow: 0 4px 8px rgba(31, 41, 35, .12), 0 12px 22px color-mix(in srgb, var(--accent) 20%, transparent);
     }
     .secondary-button:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+      background: var(--accent-wash);
+      border-color: var(--accent-light);
+      color: var(--accent-strong);
+      box-shadow: 0 4px 8px rgba(31, 41, 35, .08), 0 10px 20px color-mix(in srgb, var(--accent) 13%, transparent);
     }
     .primary-button:active:not(:disabled), .secondary-button:active:not(:disabled), .auth-submit-btn:active:not(:disabled) {
       transform: translateY(0);
       box-shadow: 0 3px 8px color-mix(in srgb, var(--accent-strong) 18%, transparent);
     }
-    .icon-button { box-shadow: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease; }
+    .icon-button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text-soft);
+      box-shadow: 0 2px 5px rgba(31, 41, 35, .06);
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    .icon-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--accent-light);
+      background: var(--accent-wash);
+      color: var(--accent-strong);
+      box-shadow: 0 5px 12px color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .text-button { border-radius: 9px; color: var(--accent-strong); transition: background-color .18s ease, color .18s ease; }
+    .text-button:hover:not(:disabled) { background: var(--accent-wash); color: var(--accent-strong); }
     .dark .primary-button, .dark .auth-submit-btn { color: var(--on-accent); }
     .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: not-allowed; opacity: .55; }
     .color-picker-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
@@ -1581,16 +1602,8 @@
       </div>
       <div class="customization-groups">
         <section class="customization-group" aria-labelledby="colorSettingsLabel">
-          <h3 class="customization-label" id="colorSettingsLabel">Tema de color</h3>
+          <h3 class="customization-label" id="colorSettingsLabel">Color de acento</h3>
           <div class="color-picker-grid">
-            <div class="color-picker-card">
-              <span class="color-picker-wheel" id="primaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el fondo primario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
-              <span class="color-picker-copy"><span class="color-picker-name">Fondo primario</span><output class="color-picker-hex" id="primaryColorValue">#F7F8F6</output><label class="color-picker-lightness-label" for="primaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="primaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del fondo primario"></span>
-            </div>
-            <div class="color-picker-card">
-              <span class="color-picker-wheel" id="secondaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el fondo secundario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
-              <span class="color-picker-copy"><span class="color-picker-name">Fondo secundario</span><output class="color-picker-hex" id="secondaryColorValue">#FFFFFF</output><label class="color-picker-lightness-label" for="secondaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="secondaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del fondo secundario"></span>
-            </div>
             <div class="color-picker-card">
               <span class="color-picker-wheel" id="tertiaryColorWheel" role="slider" tabindex="0" aria-label="Rueda para el color terciario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
               <span class="color-picker-copy"><span class="color-picker-name">Color terciario</span><output class="color-picker-hex" id="tertiaryColorValue">#C27A91</output><label class="color-picker-lightness-label" for="tertiaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="tertiaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color terciario"></span>
@@ -1949,8 +1962,6 @@
         const hasThreeColorTheme = Object.hasOwn(preferences, "customTertiary");
         return {
           palette: Object.hasOwn(INTERFACE_PALETTES, preferences.palette) ? preferences.palette : "rose",
-          customPrimary: hasThreeColorTheme ? normalizeColor(preferences.customPrimary) : null,
-          customSecondary: hasThreeColorTheme ? normalizeColor(preferences.customSecondary) : null,
           customTertiary: normalizeColor(hasThreeColorTheme ? preferences.customTertiary : preferences.customPrimary),
           density: preferences.density === "compact" ? "compact" : "comfortable",
           reduceMotion: preferences.reduceMotion === true
@@ -2011,36 +2022,22 @@
         const colors = isDark ? palette.dark : palette.light;
         const surfaces = isDark
           ? { page: "#151c28", surface: "#1d2634", soft: "#232e3e", strong: "#303d50", line: "#354256" }
-          : { page: "#f7f8f6", surface: "#ffffff", soft: "#f1f6f1", strong: "#e4eee6", line: "#dfe6e0" };
-        const primaryColor = interfacePreferences.customPrimary || surfaces.page;
-        const secondaryColor = interfacePreferences.customSecondary || surfaces.surface;
+          : { page: "#f7f8f6", surface: "#ffffff", soft: "#f1f3f4", strong: "#e2e6e8", line: "#d9dfe2" };
         const tertiaryColor = interfacePreferences.customTertiary || colors.accent;
         const tertiaryStrong = interfacePreferences.customTertiary || colors.strong;
-        const interfaceText = contrastTextColor(secondaryColor);
         const heroText = contrastTextColor(tertiaryColor);
         const accentLight = interfacePreferences.customTertiary
           ? `color-mix(in srgb, ${tertiaryColor} 28%, ${surfaces.strong})`
           : colors.light;
         const accentWash = interfacePreferences.customTertiary
-          ? `color-mix(in srgb, ${tertiaryColor} 12%, ${secondaryColor})`
+          ? `color-mix(in srgb, ${tertiaryColor} 12%, ${surfaces.surface})`
           : colors.wash;
-        const softSurface = interfacePreferences.customPrimary || interfacePreferences.customSecondary
-          ? `color-mix(in srgb, ${secondaryColor} 90%, ${primaryColor})`
-          : surfaces.soft;
-        const strongSurface = interfacePreferences.customPrimary || interfacePreferences.customSecondary
-          ? `color-mix(in srgb, ${secondaryColor} 74%, ${interfaceText})`
-          : surfaces.strong;
-        const lineColor = interfacePreferences.customPrimary || interfacePreferences.customSecondary
-          ? `color-mix(in srgb, ${secondaryColor} 78%, ${interfaceText})`
-          : surfaces.line;
         const properties = {
-          "--page": primaryColor,
-          "--surface": secondaryColor,
-          "--surface-soft": softSurface,
-          "--surface-strong": strongSurface,
-          "--line": lineColor,
-          "--text": interfaceText,
-          "--text-soft": `color-mix(in srgb, ${interfaceText} 62%, ${secondaryColor})`,
+          "--page": surfaces.page,
+          "--surface": surfaces.surface,
+          "--surface-soft": surfaces.soft,
+          "--surface-strong": surfaces.strong,
+          "--line": surfaces.line,
           "--accent": tertiaryColor,
           "--accent-strong": tertiaryStrong,
           "--accent-light": accentLight,
@@ -2058,11 +2055,9 @@
         root.classList.toggle("compact", interfacePreferences.density === "compact");
         root.classList.toggle("reduce-motion", interfacePreferences.reduceMotion);
         document.querySelectorAll("[data-palette]").forEach((button) => {
-          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette && !interfacePreferences.customPrimary && !interfacePreferences.customSecondary && !interfacePreferences.customTertiary));
+          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette && !interfacePreferences.customTertiary));
         });
         [
-          { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", valueId: "primaryColorValue", color: primaryColor },
-          { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", valueId: "secondaryColorValue", color: secondaryColor },
           { wheelId: "tertiaryColorWheel", lightnessId: "tertiaryColorLightness", valueId: "tertiaryColorValue", color: tertiaryColor }
         ].forEach(({ wheelId, lightnessId, valueId, color }) => {
           const wheel = $(wheelId);
@@ -2890,8 +2885,6 @@
         const densityChoice = event.target.closest("[data-density]");
         if (paletteChoice) {
           interfacePreferences.palette = paletteChoice.dataset.palette;
-          interfacePreferences.customPrimary = null;
-          interfacePreferences.customSecondary = null;
           interfacePreferences.customTertiary = null;
         }
         if (densityChoice) interfacePreferences.density = densityChoice.dataset.density;
@@ -2902,8 +2895,6 @@
         }
       });
       [
-        { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", preferenceKey: "customPrimary", property: "--page" },
-        { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", preferenceKey: "customSecondary", property: "--surface" },
         { wheelId: "tertiaryColorWheel", lightnessId: "tertiaryColorLightness", preferenceKey: "customTertiary", property: "--accent" }
       ].forEach(({ wheelId, lightnessId, preferenceKey, property }) => {
         const wheel = $(wheelId);
