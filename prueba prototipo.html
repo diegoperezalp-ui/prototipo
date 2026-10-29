@@ -1295,6 +1295,29 @@
     .icon-button { box-shadow: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease; }
     .dark .primary-button, .dark .auth-submit-btn { color: var(--on-accent); }
     .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: not-allowed; opacity: .55; }
+    .color-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .color-picker-card {
+      min-width: 0; min-height: 112px; padding: 13px; display: flex; align-items: center; gap: 12px;
+      border: 1px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer;
+      transition: border-color .16s ease, background-color .16s ease;
+    }
+    .color-picker-card:hover { border-color: var(--accent-light); background: var(--surface-soft); }
+    .color-picker-wheel {
+      width: 78px; height: 78px; position: relative; flex: 0 0 78px; overflow: hidden; border: 1px solid var(--line); border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, transparent 76%), conic-gradient(#ff3b30, #ffcc00, #34c759, #00c7be, #007aff, #af52de, #ff2d55, #ff3b30);
+      cursor: crosshair; touch-action: none;
+    }
+    .color-picker-wheel:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 42%, transparent); outline-offset: 3px; }
+    .color-wheel-marker {
+      width: 14px; height: 14px; position: absolute; top: var(--marker-y, 50%); left: var(--marker-x, 50%); transform: translate(-50%, -50%);
+      border: 2px solid #fff; border-radius: 50%; background: var(--picker-color, var(--accent)); box-shadow: 0 0 0 1px #25312a, 0 1px 4px rgba(0,0,0,.3); pointer-events: none;
+    }
+    .color-picker-copy { min-width: 0; flex: 1; display: grid; gap: 5px; }
+    .color-picker-name { color: var(--text); font-size: 12px; font-weight: 800; }
+    .color-picker-hex { color: var(--text-soft); font-size: 11px; font-variant-numeric: tabular-nums; text-transform: uppercase; }
+    .color-picker-lightness-label { margin-top: 3px; color: var(--text-soft); font-size: 9px; }
+    .color-picker-lightness { width: 100%; height: 16px; margin: 0; accent-color: var(--accent-strong); cursor: pointer; }
+    @media (max-width: 520px) { .color-picker-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -1545,8 +1568,21 @@
         <button class="icon-button" id="closeCustomization" type="button" aria-label="Cerrar personalización"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="customization-groups">
+        <section class="customization-group" aria-labelledby="colorSettingsLabel">
+          <h3 class="customization-label" id="colorSettingsLabel">Colores</h3>
+          <div class="color-picker-grid">
+            <div class="color-picker-card">
+              <span class="color-picker-wheel" id="primaryColorWheel" role="slider" tabindex="0" aria-label="Rueda de color primario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
+              <span class="color-picker-copy"><span class="color-picker-name">Primario</span><output class="color-picker-hex" id="primaryColorValue">#C27A91</output><label class="color-picker-lightness-label" for="primaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="primaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color primario"></span>
+            </div>
+            <div class="color-picker-card">
+              <span class="color-picker-wheel" id="secondaryColorWheel" role="slider" tabindex="0" aria-label="Rueda de color secundario" aria-valuemin="0" aria-valuemax="359"><span class="color-wheel-marker"></span></span>
+              <span class="color-picker-copy"><span class="color-picker-name">Secundario</span><output class="color-picker-hex" id="secondaryColorValue">#70515D</output><label class="color-picker-lightness-label" for="secondaryColorLightness">Luminosidad</label><input class="color-picker-lightness" id="secondaryColorLightness" type="range" min="5" max="95" value="50" aria-label="Luminosidad del color secundario"></span>
+            </div>
+          </div>
+        </section>
         <fieldset class="customization-group">
-          <legend class="customization-label">Color de acento</legend>
+          <legend class="customization-label">Paletas rápidas</legend>
           <div class="palette-options" role="group" aria-label="Elegir color de acento">
             <button class="palette-choice" type="button" data-palette="rose" aria-pressed="true"><span class="palette-swatch" style="--swatch:#bd7189"></span><span>Rosa</span></button>
             <button class="palette-choice" type="button" data-palette="sage" aria-pressed="false"><span class="palette-swatch" style="--swatch:#6e9178"></span><span>Salvia</span></button>
@@ -1893,11 +1929,51 @@
 
       function normalizeInterfacePreferences(value) {
         const preferences = value && typeof value === "object" ? value : {};
+        const normalizeColor = (color) => typeof color === "string" && /^#[\da-f]{6}$/i.test(color) ? color.toUpperCase() : null;
         return {
           palette: Object.hasOwn(INTERFACE_PALETTES, preferences.palette) ? preferences.palette : "rose",
+          customPrimary: normalizeColor(preferences.customPrimary),
+          customSecondary: normalizeColor(preferences.customSecondary),
           density: preferences.density === "compact" ? "compact" : "comfortable",
           reduceMotion: preferences.reduceMotion === true
         };
+      }
+
+      function contrastTextColor(hexColor) {
+        const [red, green, blue] = hexColor.match(/[\da-f]{2}/gi).map((channel) => parseInt(channel, 16) / 255);
+        const linearize = (channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+        const luminance = 0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
+        return luminance > 0.179 ? "#19221d" : "#ffffff";
+      }
+
+      function hexToHsl(hexColor) {
+        const [red, green, blue] = hexColor.match(/[\da-f]{2}/gi).map((channel) => parseInt(channel, 16) / 255);
+        const maximum = Math.max(red, green, blue);
+        const minimum = Math.min(red, green, blue);
+        const delta = maximum - minimum;
+        const lightness = (maximum + minimum) / 2;
+        let hue = 0;
+        let saturation = 0;
+        if (delta) {
+          saturation = delta / (1 - Math.abs(2 * lightness - 1));
+          if (maximum === red) hue = 60 * (((green - blue) / delta) % 6);
+          else if (maximum === green) hue = 60 * ((blue - red) / delta + 2);
+          else hue = 60 * ((red - green) / delta + 4);
+        }
+        return { hue: (hue + 360) % 360, saturation, lightness };
+      }
+
+      function hslToHex(hue, saturation, lightness) {
+        const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+        const secondary = chroma * (1 - Math.abs((hue / 60) % 2 - 1));
+        const offset = lightness - chroma / 2;
+        const channels = hue < 60 ? [chroma, secondary, 0]
+          : hue < 120 ? [secondary, chroma, 0]
+            : hue < 180 ? [0, chroma, secondary]
+              : hue < 240 ? [0, secondary, chroma]
+                : hue < 300 ? [secondary, 0, chroma]
+                  : [chroma, 0, secondary];
+        return `#${channels.map((channel) => Math.round((channel + offset) * 255).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
       }
 
       function loadInterfacePreferences() {
@@ -1914,23 +1990,50 @@
         const root = document.documentElement;
         const palette = INTERFACE_PALETTES[interfacePreferences.palette] || INTERFACE_PALETTES.rose;
         const colors = root.classList.contains("dark") ? palette.dark : palette.light;
+        const primaryColor = interfacePreferences.customPrimary || colors.accent;
+        const primaryStrong = interfacePreferences.customPrimary || colors.strong;
+        const secondaryColor = interfacePreferences.customSecondary || colors.hero;
+        const heroText = contrastTextColor(secondaryColor);
+        const accentLight = interfacePreferences.customPrimary
+          ? `color-mix(in srgb, ${primaryColor} 28%, var(--surface-strong))`
+          : colors.light;
+        const accentWash = interfacePreferences.customPrimary
+          ? `color-mix(in srgb, ${primaryColor} 12%, var(--surface))`
+          : colors.wash;
         const properties = {
-          "--accent": colors.accent,
-          "--accent-strong": colors.strong,
-          "--accent-light": colors.light,
-          "--accent-wash": colors.wash,
-          "--hero": colors.hero,
-          "--hero-surface": colors.heroSurface,
-          "--hero-accent": colors.heroAccent,
-          "--hero-muted": colors.heroMuted,
-          "--focus-text": colors.heroMuted,
-          "--focus-progress": colors.light
+          "--accent": primaryColor,
+          "--accent-strong": primaryStrong,
+          "--accent-light": accentLight,
+          "--accent-wash": accentWash,
+          "--on-accent": contrastTextColor(primaryStrong),
+          "--hero": secondaryColor,
+          "--hero-surface": interfacePreferences.customSecondary ? secondaryColor : colors.heroSurface,
+          "--hero-text": heroText,
+          "--hero-accent": interfacePreferences.customSecondary ? heroText : colors.heroAccent,
+          "--hero-muted": interfacePreferences.customSecondary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
+          "--focus-text": interfacePreferences.customSecondary ? `color-mix(in srgb, ${heroText} 78%, transparent)` : colors.heroMuted,
+          "--focus-progress": accentLight
         };
         Object.entries(properties).forEach(([name, value]) => root.style.setProperty(name, value));
         root.classList.toggle("compact", interfacePreferences.density === "compact");
         root.classList.toggle("reduce-motion", interfacePreferences.reduceMotion);
         document.querySelectorAll("[data-palette]").forEach((button) => {
-          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette));
+          button.setAttribute("aria-pressed", String(button.dataset.palette === interfacePreferences.palette && !interfacePreferences.customPrimary && !interfacePreferences.customSecondary));
+        });
+        [
+          { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", valueId: "primaryColorValue", color: primaryColor },
+          { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", valueId: "secondaryColorValue", color: secondaryColor }
+        ].forEach(({ wheelId, lightnessId, valueId, color }) => {
+          const wheel = $(wheelId);
+          const hsl = hexToHsl(color);
+          const angle = hsl.hue * Math.PI / 180;
+          wheel.style.setProperty("--marker-x", `${50 + Math.sin(angle) * hsl.saturation * 46}%`);
+          wheel.style.setProperty("--marker-y", `${50 - Math.cos(angle) * hsl.saturation * 46}%`);
+          wheel.style.setProperty("--picker-color", color);
+          wheel.setAttribute("aria-valuenow", String(Math.round(hsl.hue)));
+          wheel.setAttribute("aria-valuetext", `${color}, tono ${Math.round(hsl.hue)} grados, saturación ${Math.round(hsl.saturation * 100)}%`);
+          $(lightnessId).value = String(Math.round(hsl.lightness * 100));
+          $(valueId).textContent = color.toUpperCase();
         });
         document.querySelectorAll("[data-density]").forEach((button) => {
           button.setAttribute("aria-pressed", String(button.dataset.density === interfacePreferences.density));
@@ -2744,13 +2847,63 @@
         }
         const paletteChoice = event.target.closest("[data-palette]");
         const densityChoice = event.target.closest("[data-density]");
-        if (paletteChoice) interfacePreferences.palette = paletteChoice.dataset.palette;
+        if (paletteChoice) {
+          interfacePreferences.palette = paletteChoice.dataset.palette;
+          interfacePreferences.customPrimary = null;
+          interfacePreferences.customSecondary = null;
+        }
         if (densityChoice) interfacePreferences.density = densityChoice.dataset.density;
         if (event.target.closest("#motionSwitch")) interfacePreferences.reduceMotion = !interfacePreferences.reduceMotion;
         if (paletteChoice || densityChoice || event.target.closest("#motionSwitch")) {
           applyInterfacePreferences();
           saveInterfacePreferences();
         }
+      });
+      [
+        { wheelId: "primaryColorWheel", lightnessId: "primaryColorLightness", preferenceKey: "customPrimary" },
+        { wheelId: "secondaryColorWheel", lightnessId: "secondaryColorLightness", preferenceKey: "customSecondary" }
+      ].forEach(({ wheelId, lightnessId, preferenceKey }) => {
+        const wheel = $(wheelId);
+        const lightnessInput = $(lightnessId);
+        const currentColor = () => interfacePreferences[preferenceKey] || getComputedStyle(document.documentElement).getPropertyValue(preferenceKey === "customPrimary" ? "--accent" : "--hero").trim();
+        const setColor = (color) => {
+          interfacePreferences[preferenceKey] = color;
+          applyInterfacePreferences();
+        };
+        const setFromPointer = (event) => {
+          const bounds = wheel.getBoundingClientRect();
+          const deltaX = event.clientX - (bounds.left + bounds.width / 2);
+          const deltaY = event.clientY - (bounds.top + bounds.height / 2);
+          const radius = Math.min(bounds.width, bounds.height) / 2 - 7;
+          const saturation = Math.min(1, Math.hypot(deltaX, deltaY) / radius);
+          const hue = (Math.atan2(deltaX, -deltaY) * 180 / Math.PI + 360) % 360;
+          setColor(hslToHex(hue, saturation, hexToHsl(currentColor()).lightness));
+        };
+        wheel.addEventListener("pointerdown", (event) => {
+          wheel.setPointerCapture(event.pointerId);
+          setFromPointer(event);
+        });
+        wheel.addEventListener("pointermove", (event) => {
+          if (wheel.hasPointerCapture(event.pointerId)) setFromPointer(event);
+        });
+        wheel.addEventListener("pointerup", saveInterfacePreferences);
+        wheel.addEventListener("pointercancel", saveInterfacePreferences);
+        wheel.addEventListener("keydown", (event) => {
+          const hsl = hexToHsl(currentColor());
+          if (event.key === "ArrowLeft") hsl.hue = (hsl.hue - 1 + 360) % 360;
+          else if (event.key === "ArrowRight") hsl.hue = (hsl.hue + 1) % 360;
+          else if (event.key === "ArrowUp") hsl.saturation = Math.min(1, hsl.saturation + 0.05);
+          else if (event.key === "ArrowDown") hsl.saturation = Math.max(0, hsl.saturation - 0.05);
+          else return;
+          event.preventDefault();
+          setColor(hslToHex(hsl.hue, hsl.saturation, hsl.lightness));
+          saveInterfacePreferences();
+        });
+        lightnessInput.addEventListener("input", () => {
+          const hsl = hexToHsl(currentColor());
+          setColor(hslToHex(hsl.hue, hsl.saturation, Number(lightnessInput.value) / 100));
+        });
+        lightnessInput.addEventListener("change", saveInterfacePreferences);
       });
       $("newActivityButton").addEventListener("click", () => openModal());
       $("addForDay").addEventListener("click", () => openModal(null, selectedDate));
