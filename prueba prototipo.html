@@ -1261,6 +1261,40 @@
       .service-target-edit { grid-template-columns: minmax(0, 1fr) auto; }
       .service-target-edit .secondary-button { min-width: 0; padding: 0 12px; }
     }
+
+    .primary-button, .secondary-button, .auth-submit-btn {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: none;
+      transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease, filter .16s ease;
+    }
+    .primary-button, .auth-submit-btn {
+      border-color: var(--accent-strong);
+      background: var(--accent-strong);
+      color: var(--on-accent);
+    }
+    .secondary-button { color: var(--accent-strong); }
+    .primary-button::before, .primary-button::after,
+    .secondary-button::before, .secondary-button::after,
+    .auth-submit-btn::before, .auth-submit-btn::after { display: none; }
+    .primary-button:hover:not(:disabled), .auth-submit-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(.96);
+      box-shadow: none;
+    }
+    .secondary-button:hover:not(:disabled), .icon-button:hover:not(:disabled), .text-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--accent-light);
+      background: var(--accent-wash);
+      color: var(--accent-strong);
+      box-shadow: none;
+    }
+    .icon-button { box-shadow: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease; }
+    .dark .primary-button, .dark .auth-submit-btn { color: var(--on-accent); }
+    .primary-button:disabled, .secondary-button:disabled, .auth-submit-btn:disabled { cursor: not-allowed; opacity: .55; }
   </style>
 </head>
 <body>
